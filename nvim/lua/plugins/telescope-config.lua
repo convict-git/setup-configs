@@ -1,4 +1,5 @@
 local telescope = require('telescope')
+local builtin = require('telescope.builtin')
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 
@@ -57,7 +58,6 @@ telescope.setup{
 telescope.load_extension('fzf')
 
 -- Keymaps:
-local builtin = require('telescope.builtin')
 local opts = { silent = true }
 
 -- Full repo find_files (for now using fzf.vim's GFiles, too fast to avoid)
@@ -85,3 +85,41 @@ vim.keymap.set("n", "<C-S-f>", builtin.current_buffer_fuzzy_find, opts) -- Find 
 vim.keymap.set("n", "<leader>gs", builtin.git_status, opts)
 vim.keymap.set("n", "<leader>gc", builtin.git_commits, opts)
 vim.keymap.set("n", "<S-l>", builtin.treesitter, opts)
+
+
+-- Custom Plugin for PR Reviews
+local git_commits_custom = require("telescope.pickers").new({}, {
+  prompt_title = "Git Commits",
+  finder = require("telescope.finders").new_oneshot_job(
+    { "git", "log", "--oneline" }, -- or include hash, date, author, etc.
+    {}
+  ),
+  sorter = require("telescope.config").values.generic_sorter({}),
+  attach_mappings = function(_, map)
+    actions.select_default:replace(function()
+      local selection = action_state.get_selected_entry()
+      local commit_hash = vim.split(selection.value, " ")[1]
+
+      -- Show files changed in that commit in quickfix
+      local files = vim.fn.systemlist("git diff-tree --no-commit-id --name-only -r " .. commit_hash)
+
+      local items = {}
+      for _, file in ipairs(files) do
+        table.insert(items, {
+          filename = file,
+          lnum = 1,
+          col = 1,
+          text = "Modified in commit " .. commit_hash,
+        })
+      end
+      vim.fn.setqflist({}, ' ', { title = 'Modified Files', items = items })
+      vim.cmd("copen")
+    end)
+    return true
+  end,
+})
+
+-- vim.keymap.set("n", "<S-l>", function()
+--   git_commits_custom:find()
+-- end, { desc = "Custom Git Commits" })
+
