@@ -121,8 +121,14 @@ require("lazy").setup({
   { "nvim-telescope/telescope-file-browser.nvim" },
 
   -- === fzf.vim ===
-  { "junegunn/fzf.vim" },
   { "junegunn/fzf" },
+  {
+    "junegunn/fzf.vim",
+    dependencies = { "junegunn/fzf" },
+    config = function()
+      require('plugins/fzf-nvim')
+    end,
+  },
 
   -- === Treesitter ===
   {
@@ -145,27 +151,6 @@ require("lazy").setup({
 
   { "karb94/neoscroll.nvim" }, -- === Smooth Scrolling ===
 })
-
--- ***************************************************************************
--- Fzf.vim
-vim.keymap.set("n", "<C-p>", function()
-  vim.cmd("tabnew")     -- open a new tab
-  vim.cmd("GFiles")     -- run GFiles in the new tab
-end, { silent = true })
-
-vim.keymap.set("n", "<C-S-p>", ":GFiles<CR>", { silent = true })
-
--- Grep on files
-vim.keymap.set("n", "<C-f>", function()
-  vim.cmd("vsplit") -- open vertical split
-  vim.cmd("Rg") -- opens Rg
-end, { silent = true })
-
--- Normal mode: vertical split
-vim.keymap.set("n", "<leader>v", function()
-  vim.cmd("vsplit") -- open vertical split
-  vim.cmd("GFiles") -- opens GFiles, escape if want to continue on the same file
-end, { silent = true })
 
 -- ***************************************************************************
 -- Coc settings
