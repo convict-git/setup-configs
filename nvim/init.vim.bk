@@ -1,0 +1,32 @@
+let g:python3_host_prog = '/opt/homebrew/bin/python3'
+set runtimepath^=~/.vim
+set runtimepath+=~/.vim/after
+let &packpath = &runtimepath
+source ~/.vimrc
+
+lua << EOF
+require('telescope').setup{
+  defaults = {
+    -- Default settings here
+  },
+  extensions = {
+    fzf = {
+      fuzzy = false, -- Disable fuzzy matching in fzf extension
+      case_mode = 'ignore_case'
+    }
+  }
+}
+require('telescope').load_extension('fzf')
+
+vim.keymap.set("v", "<leader>sb", function()
+  -- Get visual range
+  local start_line = vim.fn.line("'<")
+  local end_line = vim.fn.line("'>")
+  -- Ask user for pattern
+  local pattern = vim.fn.input("Search pattern: ")
+  if pattern == "" then return end
+  -- Run vimgrep in that range
+  vim.cmd(start_line .. "," .. end_line .. "vimgrep /" .. pattern .. "/ %")
+  vim.cmd("Telescope quickfix")
+end, { desc = "Search in selected block (vimgrep)" })
+EOF

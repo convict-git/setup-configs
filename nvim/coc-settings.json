@@ -1,0 +1,19 @@
+{
+  "suggest.noselect": true,
+  "git.enableGutters": true,
+  "git.addGBlameToVirtualText": true,
+  "rust-analyzer.inlayHints.typeHints.enable": true,
+  "rust-analyzer.inlayHints.parameterHints.enable": true,
+  "coc.preferences.formatOnSave": true,
+  "tsserver.maxTsServerMemory": 20000,
+  // "tsserver.trace.server": "verbose",
+  // "tsserver.log": "verbose",
+  "clangd.fallbackFlags": ["--std=c++17"],
+  "clangd.trace.server": "verbose",
+  "eslint.options": {
+    "rules": {
+      "no-restricted-syntax": "off"
+    }
+  },
+  "java.import.gradle.java.home": "/Users/priyanshu.shrivastav/Library/Java/JavaVirtualMachines/corretto-17.0.12/Contents/Home"
+}
