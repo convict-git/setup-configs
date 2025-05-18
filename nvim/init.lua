@@ -73,7 +73,7 @@ require("lazy").setup({
   { 'ap/vim-css-color'},
   { 'jiangmiao/auto-pairs', lazy = false },
   { 'preservim/tagbar' },
-  { 'vifm/vifm.vim' },
+--{ 'vifm/vifm.vim' }, -- Replaced with Yazi
 
 -- colorschemes
 --{ 'sainnhe/gruvbox-material' },
@@ -130,6 +130,53 @@ require("lazy").setup({
     end,
   },
 
+  -- === neogit ===
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",         -- required
+      "sindrets/diffview.nvim",        -- optional - Diff integration
+
+      -- Only one of these is needed.
+      "nvim-telescope/telescope.nvim",
+    },
+    config = function()
+      vim.keymap.set("n", "<leader>ng", ":Neogit kind=floating<CR>", { silent = true })
+    end,
+  },
+
+  -- === Yazi (file-manager) ===
+  {
+    "mikavilpas/yazi.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      -- check the installation instructions at
+      -- https://github.com/folke/snacks.nvim
+      "folke/snacks.nvim"
+    },
+    keys = {
+      -- 👇 in this section, choose your own keymappings!
+      {
+        "<C-g>",
+        mode = { "n", "v" },
+        "<cmd>Yazi<cr>",
+        desc = "Open yazi at the current file",
+      },
+    },
+    ---@type YaziConfig | {}
+    opts = {
+      -- if you want to open yazi instead of netrw
+      open_for_directories = true,
+      keymaps = {
+        show_help = "<f1>",
+      },
+    },
+    -- 👇 if you use `open_for_directories=true`, this is recommended
+    init = function()
+      vim.g.loaded_netrwPlugin = 1
+    end,
+  },
+
   -- === Treesitter ===
   {
     "nvim-treesitter/nvim-treesitter",
@@ -137,7 +184,17 @@ require("lazy").setup({
   },
 
   -- === Dropbar ===
-  { "Bekaboo/dropbar.nvim" },
+  { "Bekaboo/dropbar.nvim",
+     dependencies = {
+       'nvim-telescope/telescope-fzf-native.nvim',
+      },
+     config = function ()
+       local dropbar_api = require('dropbar.api')
+       vim.keymap.set('n', '<Leader>;', dropbar_api.pick, { desc = 'Pick symbols in winbar' })
+       vim.keymap.set('n', '[;', dropbar_api.goto_context_start, { desc = 'Go to start of current context' })
+       vim.keymap.set('n', '];', dropbar_api.select_next_context, { desc = 'Select next context' })
+     end
+  },
 
   -- === DAP ===
   { "mfussenegger/nvim-dap" },
@@ -362,9 +419,9 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 })
 
 -- Vifm
-vim.keymap.set("n", "<C-g>", ":Vifm<CR>", { noremap = true, silent = true })
-vim.g.vifm_replace_netrw_cmd = 1
-vim.g.vifm_keep_cwd = 1
+-- vim.keymap.set("n", "<C-g>", ":Vifm<CR>", { noremap = true, silent = true })
+-- vim.g.vifm_replace_netrw_cmd = 1
+-- vim.g.vifm_keep_cwd = 1
 
 -- This shit was causing lot of bugs. *NOTE* <C-x> decrements a number, so map it to just save the file
 vim.keymap.set("n", "<C-x>", ":w<CR>", { noremap = true, silent = true })
