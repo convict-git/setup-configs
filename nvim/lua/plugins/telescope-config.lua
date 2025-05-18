@@ -82,7 +82,7 @@ local opts = { silent = true }
 
 vim.keymap.set("n", "<C-S-f>", builtin.current_buffer_fuzzy_find, opts) -- Find in current buffer
 
-vim.keymap.set("n", "<leader>gs", builtin.git_status, opts)
+-- vim.keymap.set("n", "<leader>gs", builtin.git_status, opts) -- Using DiffViewOpen for this
 vim.keymap.set("n", "<leader>gc", builtin.git_commits, opts)
 vim.keymap.set("n", "<S-l>", builtin.treesitter, opts)
 
