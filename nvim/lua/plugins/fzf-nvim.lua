@@ -22,7 +22,7 @@ vim.keymap.set("n", "<C-S-p>", ":Files<CR>", { silent = true })
 
 -- Grep on files
 vim.keymap.set("n", "<C-f>", function()
-  vim.cmd("vsplit") -- open vertical split
+  vim.cmd("tabnew") -- open vertical split
   vim.cmd("Rg") -- opens Rg
 end, { silent = true })
 
