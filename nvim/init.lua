@@ -141,7 +141,7 @@ require("lazy").setup({
       "nvim-telescope/telescope.nvim",
     },
     config = function()
-      vim.keymap.set("n", "<leader>gs", ":DiffViewOpen<CR>", { silent = true })
+      vim.keymap.set("n", "<leader>gs", ":DiffviewOpen<CR>", { silent = true })
     end,
   },
 
