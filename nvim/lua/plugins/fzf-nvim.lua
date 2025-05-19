@@ -51,6 +51,8 @@ end, { silent = true })
 -- Refreshing cache in the background
 -- Purging expired caches asynchronously
 --
+-- Checkout the fd-cache script here: https://github.com/convict-git/setup-configs/blob/main/scripts/fd-cache.sh
+--
 -- First call
 -- fd-cache --type f --strip-cwd-prefix --hidden --follow --exclude .git > /dev/null   1.30s user 7.24s system 251% cpu 3.398 total
 -- Subsequent calls - 55 times faster!! Holy shit!

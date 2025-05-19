@@ -29,7 +29,7 @@ KEY="$(echo "${CWD} $*" | sha256sum | awk '{print $1}')"
 CACHE_FILE="${CACHE_DIR}/${KEY}.txt"
 
 # === BACKGROUND REFRESH ===
-refresh_cache() {
+refresh_cache_async() {
   nohup bash -c "fd $* > \"$CACHE_FILE\"" >/dev/null 2>&1 &
 }
 
@@ -38,7 +38,7 @@ if [[ -f "$CACHE_FILE" ]]; then
   cat "$CACHE_FILE"
 
   if ! is_cache_fresh "$CACHE_FILE"; then
-    refresh_cache "$@"
+    refresh_cache_async "$@"
   fi
 else
   fd "$@" | tee "$CACHE_FILE"
