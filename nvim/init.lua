@@ -142,6 +142,7 @@ require("lazy").setup({
     },
     config = function()
       vim.keymap.set("n", "<leader>gs", ":DiffviewOpen<CR>", { silent = true })
+      vim.keymap.set("n", "<leader>sg", ":DiffviewClose<CR>", { silent = true })
     end,
   },
 
