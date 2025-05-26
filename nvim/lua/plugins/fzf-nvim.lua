@@ -20,10 +20,19 @@ end, { silent = true })
 
 vim.keymap.set("n", "<C-S-p>", ":Files<CR>", { silent = true })
 
+vim.cmd([[
+  command! -bang -nargs=* RgSubstring call fzf#vim#grep("rg --fixed-strings --column --line-number --no-heading --color=always --smart-case -- " . fzf#shellescape(<q-args>), fzf#vim#with_preview(), <bang>0)
+]])
+
 -- Grep on files
 vim.keymap.set("n", "<C-f>", function()
+  local query = vim.fn.input("Rg -F -S: ")
+  if query == nil or query == "" then
+    return -- exit if no input
+  end
+
   vim.cmd("tabnew") -- open vertical split
-  vim.cmd("Rg") -- opens Rg
+  vim.cmd("RgSubstring " .. query) -- opens Rg
 end, { silent = true })
 
 -- Normal mode: vertical split
