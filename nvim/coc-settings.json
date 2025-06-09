@@ -7,7 +7,8 @@
   "diagnostic.virtualTextPrefix": "■■ ",
   "eslint.rules.customizations": [
     { "rule": "max-lines-per-function", "severity": "off" },
-    { "rule": "max-lines", "severity": "off" }
+    { "rule": "max-lines", "severity": "off" },
+    { "rule": "max-statements", "severity": "off" }
   ],
   "rust-analyzer.inlayHints.typeHints.enable": true,
   "rust-analyzer.inlayHints.parameterHints.enable": true,
