@@ -407,6 +407,21 @@ vim.keymap.set("n", "<leader>ad", function()
   print(path)
 end, { desc = "Copy absolute file path to clipboard" })
 
+vim.keymap.set("n", "<leader>rd", function()
+  local abs_path = vim.fn.expand("%:p")
+  local cwd = vim.fn.getcwd()
+  local rel_path = vim.fn.fnamemodify(abs_path, ":." )
+  vim.fn.setreg("+", rel_path)
+  print(rel_path)
+end, { desc = "Copy file path relative to CWD to clipboard" })
+
+vim.keymap.set("n", "<F5>", function()
+  local schemes = vim.fn.getcompletion("", "color")
+  local next = schemes[math.random(#schemes)]
+  pcall(vim.cmd.colorscheme, next)
+  print("Colorscheme: " .. next)
+end, { desc = "Random Colorscheme" })
+
 local function kill_all_buffers()
   local file = vim.fn.expand("%:p")
   vim.cmd("bufdo bd")
