@@ -21,7 +21,7 @@ end, { silent = true })
 vim.keymap.set("n", "<C-S-p>", ":Files<CR>", { silent = true })
 
 vim.cmd([[
-  command! -bang -nargs=* RgSubstring call fzf#vim#grep("rg --fixed-strings --column --line-number --no-heading --color=always --smart-case -- " . fzf#shellescape(<q-args>), fzf#vim#with_preview(), <bang>0)
+  command! -bang -nargs=* RgSubstring call fzf#vim#grep("rg --fixed-strings --mmap --column --line-number --no-heading --color=always --smart-case -- " . fzf#shellescape(<q-args>), fzf#vim#with_preview(), <bang>0)
 ]])
 
 -- Grep on files
