@@ -282,6 +282,16 @@ vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.signcolumn = 'yes'
 
+vim.api.nvim_create_augroup("AirlineCoc", { clear = true })
+
+vim.api.nvim_create_autocmd("User", {
+  group = "AirlineCoc",
+  pattern = { "CocStatusChange", "CocDiagnosticChange" },
+  callback = function()
+    vim.cmd("AirlineRefresh")
+  end,
+})
+
 -- -- tab completion -- ToDo NOT yet able to migrate to LUA due to bugs
 vim.cmd([[
   " Use tab for trigger completion with characters ahead and navigate
