@@ -198,10 +198,45 @@ require("lazy").setup({
   },
 
   -- === DAP ===
-  { "mfussenegger/nvim-dap" },
+  { "mfussenegger/nvim-dap",
+    config = function()
+      require('plugins/dap')
+    end
+  },
   { "nvim-neotest/nvim-nio" },
-  { "rcarriga/nvim-dap-ui" },
-  { "theHamsta/nvim-dap-virtual-text" },
+  { "rcarriga/nvim-dap-ui",
+    dependencies = {
+     "mfussenegger/nvim-dap",
+     "nvim-neotest/nvim-nio",
+    },
+    config = function()
+      require('dapui').setup({})
+      local dap, dapui = require("dap"), require("dapui")
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+
+      vim.keymap.set('n', '<Leader>br', ':DapToggleBreakpoint<CR>', { desc = 'Toggle Breakpoint', silent = true })
+      vim.keymap.set('n', '<Leader>db', function()
+        vim.cmd('DapTerminate')
+        dapui.close()
+      end, { desc = 'Close Dap UI', silent = true })
+      --  dap.listeners.before.event_terminated.dapui_config = function()
+      --    dapui.close()
+      --  end
+      --  dap.listeners.before.event_exited.dapui_config = function()
+      --    dapui.close()
+      --  end
+    end,
+  },
+  { "theHamsta/nvim-dap-virtual-text",
+    config = function()
+      require("nvim-dap-virtual-text").setup()
+    end,
+  },
 
   -- === UFO Folding ===
   { "kevinhwang91/promise-async" },
@@ -240,8 +275,7 @@ require("lazy").setup({
 -- Coc settings
 vim.g.coc_global_extensions = {
   'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint', 'coc-graphql',
-  'coc-json', 'coc-git', 'coc-java', 'coc-prettier', 'coc-rust-analyzer',
-  'coc-sh', 'coc-tsserver', 'coc-yaml'
+  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-java'
 }
 
 vim.opt.backup = false
