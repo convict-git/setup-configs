@@ -17,6 +17,7 @@
   "rust-analyzer.debug.nvimdap.configuration.template": "require('plugins/dap').get_configuration_template($exe, $args)",
   "coc.preferences.formatOnSave": true,
   "tsserver.maxTsServerMemory": 20000,
+  "tsserver.experimental.enableProjectDiagnostics": false,
   "clangd.fallbackFlags": ["--std=c++17"],
   "clangd.trace.server": "verbose",
   "eslint.options": {
