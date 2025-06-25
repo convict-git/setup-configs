@@ -1,3 +1,5 @@
+vim.opt.rtp:append("~/.local/share/nvim") -- Must be always kept at the top to avoid any unnecessary bugs of referring before importing
+
 -- ***************************************************************************
 -- Settings
 
