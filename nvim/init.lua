@@ -95,7 +95,7 @@ require("lazy").setup({
    priority = 1000, -- make sure to load this before all the other start plugins
    config = function()
      require('github-theme').setup({})
-     vim.cmd('colorscheme github_light')
+     -- vim.cmd('colorscheme github_light')
    end,
  },
 
@@ -555,4 +555,13 @@ vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
 vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
 vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
 
+vim.api.nvim_set_hl(0, 'CocInlayHint', { italic = true, fg = '#d5d8da', bg = '#e7ebec' })
+-- vim.api.nvim_set_hl(0, 'CocInlayParameterHint', { italic = true, fg = '#ff8800' })
+-- vim.api.nvim_set_hl(0, 'CocInlayTypeHint', { italic = true, fg = '#ff8800' })
+-- vim.api.nvim_set_hl(0, 'CocHintFloat', { italic = true, fg = '#ff8800' })
+-- vim.api.nvim_set_hl(0, 'CocHintSign', { italic = true, fg = '#ff8800' })
+
+
+-- typescript
+vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
 
