@@ -401,6 +401,19 @@ vim.api.nvim_create_autocmd("User", {
 -- ***************************************************************************
 -- Others
 
+-- Normal mode: vertical split
+vim.keymap.set("n", "<leader>v", ":vsplit<CR>", { noremap = true, silent = true })
+
+vim.cmd([[
+  colorscheme morning
+]])
+
+vim.api.nvim_create_user_command("W", function()
+  if vim.bo.modified then
+    vim.cmd("write")
+  end
+end, {})
+
 vim.keymap.set("n", "<leader>ad", function()
   local path = vim.fn.expand("%:p")
   vim.fn.setreg("+", path)
@@ -474,9 +487,11 @@ vim.keymap.set("n", "}", "8j", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-e>", "8<C-e>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-y>", "8<C-y>", { noremap = true, silent = true })
 
--- Tab workflow
-vim.keymap.set("n", "<C-j>", ":tabNext<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<C-k>", ":tabnext<CR>", { noremap = true, silent = true })
+-- Tab/Buffers workflow
+-- vim.keymap.set("n", "<C-j>", ":tabNext<CR>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<C-k>", ":tabnext<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<C-j>", ":bprev<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<C-k>", ":bnext<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-t>", ":tabnew<CR>", { noremap = true, silent = true })
 
 -- Treesitter folding

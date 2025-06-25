@@ -13,11 +13,12 @@ vim.g.fzf_layout = {
   },
 }
 
-vim.keymap.set("n", "<C-p>", function()
-  vim.cmd("tabnew")     -- open a new tab
-  vim.cmd("Files")     -- run Files in the new tab
-end, { silent = true })
+-- vim.keymap.set("n", "<C-p>", function()
+--   vim.cmd("tabnew")     -- open a new tab
+--   vim.cmd("Files")     -- run Files in the new tab
+-- end, { silent = true })
 
+vim.keymap.set("n", "<C-p>", ":Buffers<CR>", { silent = true })
 vim.keymap.set("n", "<C-S-p>", ":Files<CR>", { silent = true })
 
 vim.cmd([[
@@ -31,14 +32,9 @@ vim.keymap.set("n", "<C-f>", function()
     return -- exit if no input
   end
 
-  vim.cmd("tabnew") -- open vertical split
+  -- vim.cmd("tabnew")
+  vim.cmd("enew")
   vim.cmd("RgSubstring " .. query) -- opens Rg
-end, { silent = true })
-
--- Normal mode: vertical split
-vim.keymap.set("n", "<leader>v", function()
-  vim.cmd("vsplit") -- open vertical split
-  vim.cmd("Files") -- opens Files, escape if want to continue on the same file
 end, { silent = true })
 
 -- https://github.com/junegunn/fzf?tab=readme-ov-file#respecting-gitignore
