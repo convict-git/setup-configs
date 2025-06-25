@@ -119,7 +119,7 @@ local git_commits_custom = require("telescope.pickers").new({}, {
   end,
 })
 
--- vim.keymap.set("n", "<S-l>", function()
---   git_commits_custom:find()
--- end, { desc = "Custom Git Commits" })
-
+-- For now using Fzf Buffer (sorry telescope!)
+-- vim.keymap.set("n", "<C-p>", function()
+--   vim.cmd("Telescope buffers")
+-- end, { desc = "Telescope buffers" })
