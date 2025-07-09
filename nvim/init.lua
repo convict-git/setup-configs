@@ -48,6 +48,10 @@ vim.cmd("filetype plugin indent on")
 vim.cmd("syntax on") -- Enable syntax highlighting (again, for good measure)
 
 -- ***************************************************************************
+local cwd = vim.fn.getcwd()
+local is_java_project = vim.fn.getcwd():match("sprinklr%-app/?$") ~= nil
+
+-- ***************************************************************************
 -- Lazy.nvim bootstrap
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -106,6 +110,12 @@ require("lazy").setup({
     "neoclide/coc.nvim",
     branch = "release",
     build = "npm ci",
+    cond = function()
+      return not is_java_project -- Don't load coc for java projects, we will use some other plugins
+    end,
+    config = function()
+      require('plugins/coc-config')
+    end,
   },
 
   -- === Telescope and Extensions ===
@@ -185,6 +195,9 @@ require("lazy").setup({
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
   },
+
+  -- === Mason ===
+  require('plugins/lsp-java-config').get(not is_java_project),
 
   -- === Dropbar ===
   { "Bekaboo/dropbar.nvim",
