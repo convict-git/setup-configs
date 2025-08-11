@@ -3,6 +3,8 @@ vim.opt.rtp:append("~/.local/share/nvim") -- Must be always kept at the top to a
 -- ***************************************************************************
 -- Settings
 
+vim.opt.guifont = "Deimos:h18:b"
+vim.opt.linespace = 10
 vim.opt.backspace = { "indent", "eol", "start" } -- Backspace behavior (2 means: indent, eol, start)
 vim.opt.number = true -- Line Numbers
 vim.opt.updatetime = 100 -- Faster CursorHold (useful for plugins)
@@ -37,6 +39,8 @@ vim.opt.mousemoveevent = true
 vim.opt.previewheight = 25 -- Preview window height
 vim.opt.background = "light"
 vim.cmd("syntax enable")
+vim.cmd("match Todo /todo convict[^*/]*/") -- todo convict matches as Todo
+
 
 -- Statusline
 vim.opt.statusline = "%<%f%h%m%r%=char=%b=0x%B\\ \\ %l,%c%V\\ %P"
@@ -49,7 +53,7 @@ vim.cmd("syntax on") -- Enable syntax highlighting (again, for good measure)
 
 -- ***************************************************************************
 local cwd = vim.fn.getcwd()
-local is_java_project = vim.fn.getcwd():match("sprinklr%-app/?$") ~= nil
+local is_java_project = vim.fn.getcwd():match("sprinklr.app/?$") ~= nil
 
 -- ***************************************************************************
 -- Lazy.nvim bootstrap
@@ -79,21 +83,43 @@ require("lazy").setup({
   { 'ap/vim-css-color'},
   { 'jiangmiao/auto-pairs', lazy = false },
   { 'preservim/tagbar' },
+  { 'NLKNguyen/papercolor-theme' },
+  { 'voldikss/vim-floaterm',
+    config = function()
+      vim.keymap.set("n", "<S-t>", ":FloatermToggle!<CR>", { silent = true })
+      vim.keymap.set("n", "<leader>tr", ":FloatermNew --height=0.15 --width=0.3 --autoclose=2 --position=topright<CR>", { silent = true })
+      vim.g.floaterm_position = 'topright'
+      vim.g.floaterm_width = 0.4
+      vim.g.floaterm_height = 0.4
+    end
+  },
 --{ 'vifm/vifm.vim' }, -- Replaced with Yazi
 
 -- colorschemes
---{ 'sainnhe/gruvbox-material' },
---{ 'sainnhe/everforest' },
---{
---  "oxfist/night-owl.nvim",
---  lazy = false, -- make sure we load this during startup if it is your main colorscheme
---  priority = 1000, -- make sure to load this before all the other start plugins
---  config = function()
---    -- load the colorscheme here
---    require("night-owl").setup()
---    vim.cmd.colorscheme("night-owl")
---  end,
---},
+ { 'nordtheme/vim' },
+ {'sainnhe/gruvbox-material' },
+ { 'sainnhe/everforest' },
+ {
+   "oxfist/night-owl.nvim",
+   lazy = false, -- make sure we load this during startup if it is your main colorscheme
+   priority = 1000, -- make sure to load this before all the other start plugins
+   config = function()
+     -- load the colorscheme here
+     -- require("night-owl").setup()
+     -- vim.cmd.colorscheme("night-owl")
+   end,
+ },
+ { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+ -- Tokyo night
+ {
+  "folke/tokyonight.nvim",
+  lazy = false,
+  priority = 1000,
+  opts = {},
+  config = function()
+    require('tokyonight').setup({})
+  end,
+  },
  {
    'projekt0n/github-nvim-theme',
    name = 'github-theme',
@@ -104,12 +130,157 @@ require("lazy").setup({
      -- vim.cmd('colorscheme github_light')
    end,
  },
+ -- === highlighting colors in neovim ===
+ { 'brenoprata10/nvim-highlight-colors',
+   config = function()
+     vim.opt.termguicolors = true
+     require('nvim-highlight-colors').setup({})
+   end
+ },
 
--- === CoC ===
+
+ -- === Tabline ===
+ {
+   'romgrk/barbar.nvim',
+   cond = false,
+   config = function()
+     require('barbar').setup({
+       insert_at_end = true,
+       animation = false,
+     })
+   end,
+   dependencies = {
+      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
+   },
+ },
+
+ -- === Test coverage ===
+ {
+    "andythigpen/nvim-coverage",
+    version = "*",
+    config = function()
+      require("coverage").setup({
+        auto_reload = true,
+      })
+    end,
+  },
+
+ -- === Flash (better motion) ===
+ {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    ---@type Flash.Config
+    opts = {
+      labels = "sfghjklqwertyzvbnm",
+      modes = {
+        -- options used when flash is activated through
+        -- a regular search with `/` or `?`
+        search = {
+          -- when `true`, flash will be activated during regular search by default.
+          -- You can always toggle when searching with `require("flash").toggle()`
+          enabled = true,
+          highlight = { backdrop = false },
+          jump = { history = false, register = false, nohlsearch = true },
+        },
+      }
+    },
+    -- stylua: ignore
+    keys = {
+      { "s", mode = { "n" }, function() require("flash").jump() end, desc = "Flash" },
+      { "S", mode = { "n" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    },
+  },
+
+ -- -- === Typescript === -- Just Doesn't work!! Worst ever
+ -- {
+ --  "pmizio/typescript-tools.nvim",
+ --  dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+ --  opts = {
+ --    settings = {
+ --      tsserver_log_level = 'verbose',
+ --      tsserver_max_memory = 24000,
+ --      separate_diagnostic_server = true
+ --    }
+ --  },
+ -- },
+
+ -- Trying out
+ -- {
+ --    "Mr-LLLLL/cool-chunk.nvim",
+ --    event = { "CursorHold", "CursorHoldI" },
+ --    dependencies = {
+ --        "nvim-treesitter/nvim-treesitter",
+ --    },
+ --    config = function()
+ --        require("cool-chunk").setup({})
+ --    end
+ --  },
+ --
+  -- == Render markdown ==
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+     dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+      -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+      -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+      ---@module 'render-markdown'
+      ---@type render.md.UserConfig
+     opts = {},
+  },
+  -- == Floating todo ==
+  {
+    'vimichael/floatingtodo.nvim',
+    config = function()
+      require('floatingtodo').setup({
+        target_file = "~/notes/todo.md",
+        border = "single", -- single, rounded, etc.
+        width = 0.9, -- width of window in % of screen size
+        height = 0.6, -- height of window in % of screen size
+        position = "center", -- topleft, topright, bottomleft, bottomright
+      })
+      vim.keymap.set("n", "<leader>1", ":Td<CR>", { silent = true })
+    end,
+  },
+  -- == Search and replace for bigger projects ==
+  {
+    'MagicDuck/grug-far.nvim',
+    config = function()
+      require('grug-far').setup({
+      });
+    end
+  },
+
+  -- === Tree view ===
+  {
+    'nvim-tree/nvim-tree.lua',
+    init = function()
+      vim.g.loaded_netrw = 1
+      vim.g.loaded_netrwPlugin = 1
+      -- optionally enable 24-bit colour
+      vim.opt.termguicolors = true
+    end,
+    cond = false, -- disable for now
+    config = function()
+      require("nvim-tree").setup({
+        sort = {
+          sorter = "case_sensitive",
+        },
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = true,
+        },
+      })
+    end,
+  },
+  -- === CoC ===
   {
     "neoclide/coc.nvim",
     branch = "release",
-    build = "npm ci",
+    -- build = "npm ci",
     cond = function()
       return not is_java_project -- Don't load coc for java projects, we will use some other plugins
     end,
@@ -118,12 +289,24 @@ require("lazy").setup({
     end,
   },
 
+  -- === Avante ===
+  require('plugins/avante-config').get_avante_lazy_config(false),
+
   -- === Telescope and Extensions ===
   { "nvim-lua/plenary.nvim" },
   {
     "nvim-telescope/telescope.nvim",
     tag = "0.1.8",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      {
+        "isak102/telescope-git-file-history.nvim",
+        dependencies = {
+          "nvim-lua/plenary.nvim",
+          "tpope/vim-fugitive"
+        }
+      }
+    }
   },
   {
     "nvim-telescope/telescope-fzf-native.nvim",
@@ -131,7 +314,26 @@ require("lazy").setup({
   },
   { "nvim-telescope/telescope-frecency.nvim" },
   { "nvim-telescope/telescope-file-browser.nvim" },
-
+  {
+    "fannheyward/telescope-coc.nvim",
+    dependencies = {
+      "neoclide/coc.nvim",
+      "nvim-telescope/telescope.nvim",
+    },
+    config = function()
+      require("telescope").setup({
+        extensions = {
+          coc = {
+              theme = 'ivy',
+              prefer_locations = true, -- always use Telescope locations to preview definitions/declarations/implementations etc
+              push_cursor_on_edit = true, -- save the cursor position to jump back in the future
+              timeout = 3000, -- timeout for coc commands
+          }
+        },
+      })
+      require('telescope').load_extension('coc')
+    end
+  },
   -- === fzf.vim ===
   { "junegunn/fzf" },
   {
@@ -146,6 +348,7 @@ require("lazy").setup({
   {
     "NeogitOrg/neogit",
     dependencies = {
+      'nvim-tree/nvim-web-devicons',
       "nvim-lua/plenary.nvim",         -- required
       "sindrets/diffview.nvim",        -- optional - Diff integration
 
@@ -176,19 +379,54 @@ require("lazy").setup({
         desc = "Open yazi at the current file",
       },
     },
-    ---@type YaziConfig | {}
-    opts = {
-      -- if you want to open yazi instead of netrw
-      open_for_directories = true,
-      keymaps = {
-        show_help = "<f1>",
-      },
-    },
     -- 👇 if you use `open_for_directories=true`, this is recommended
     init = function()
       vim.g.loaded_netrwPlugin = 1
     end,
+    config = function()
+      local yazi = require('yazi')
+      yazi.setup({
+        -- if you want to open yazi instead of netrw
+        open_for_directories = true,
+        floating_window_scaling_factor = { height =  0.5, width = 0.8 },
+        keymaps = {
+          show_help = "<f1>",
+        },
+         set_keymappings_function = function(yazi_buffer, config, context)
+            -- Adding custom mapping: <leader>ro => Open all files recursively from hovered directory
+            vim.keymap.set({ "t" }, "<leader>ro", function()
+              local hovered_url = context.ya_process.hovered_url
+              local cwd = vim.fn.getcwd()
+              local rel_path = vim.fn.fnamemodify(hovered_url, ":." )  -- relative to cwd
+
+              vim.cmd("close") -- Yazi creates an autocmd for WinLeave where it clears the window
+
+              vim.defer_fn(function()
+                  vim.cmd("OpenAllFilesRecursive " .. rel_path)
+              end, 10)
+            end, { buffer = yazi_buffer, desc = "Recursively open files from hovered dir" })
+
+            -- New mapping for quickfix
+            vim.keymap.set({ "t" }, "<leader>rq", function()
+              local hovered_url = context.ya_process.hovered_url
+              local rel_path = vim.fn.fnamemodify(hovered_url, ":.")
+              vim.cmd("close")
+              vim.defer_fn(function()
+                vim.cmd("QuickfixAllFilesRecursive " .. rel_path)
+              end, 10)
+            end, { buffer = yazi_buffer, desc = "Recursively add files from hovered dir to quickfix" })
+          end,
+      })
+    end,
   },
+
+  -- -- === nvim-java === wait for some time
+  -- {
+  --   "nvim-java/nvim-java",
+  --   dependencies = {
+  --     "neovim/nvim-lspconfig",
+  --   }
+  -- },
 
   -- === Treesitter ===
   {
@@ -257,7 +495,6 @@ require("lazy").setup({
   { "kevinhwang91/promise-async" },
   { "kevinhwang91/nvim-ufo" },
 
-  { "karb94/neoscroll.nvim" }, -- === Smooth Scrolling ===
 
   -- === text-case ===
   {
@@ -287,148 +524,6 @@ require("lazy").setup({
 })
 
 -- ***************************************************************************
--- Coc settings
-vim.g.coc_global_extensions = {
-  'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint', 'coc-graphql',
-  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-java'
-}
-
-vim.opt.backup = false
-vim.opt.writebackup = false
-vim.opt.signcolumn = 'yes'
-
-vim.api.nvim_create_augroup("AirlineCoc", { clear = true })
-
-vim.api.nvim_create_autocmd("User", {
-  group = "AirlineCoc",
-  pattern = { "CocStatusChange", "CocDiagnosticChange" },
-  callback = function()
-    vim.cmd("AirlineRefresh")
-  end,
-})
-
--- -- tab completion -- ToDo NOT yet able to migrate to LUA due to bugs
-vim.cmd([[
-  " Use tab for trigger completion with characters ahead and navigate
-  " NOTE: There's always complete item selected by default, you may want to enable
-  " no select by `"suggest.noselect": true` in your configuration file
-  " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
-  " other plugin before putting this into your config
-  inoremap <silent><expr><TAB>
-        \ coc#pum#visible() ? coc#pum#next(1) :
-        \ CheckBackspace() ? "\<Tab>" :
-        \ coc#refresh()
-  inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
-
-  " Make <CR> to accept selected completion item or notify coc.nvim to format
-  " <C-g>u breaks current undo, please make your own choice
-  inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
-                                \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-
-  function! CheckBackspace() abort
-    let col = col('.') - 1
-    return !col || getline('.')[col - 1]  =~# '\s'
-  endfunction
-
-  " Use <c-space> to trigger completion
-  inoremap <silent><expr> <c-@> coc#refresh()
-
-  " Use K to show documentation in preview window
-  nnoremap <silent> K :call ShowDocumentation()<CR>
-
-  function! ShowDocumentation()
-    if CocAction('hasProvider', 'hover')
-      call CocActionAsync('doHover')
-    else
-      call feedkeys('K', 'in')
-    endif
-  endfunction
-]])
-
--- diagnostics navigation
-vim.keymap.set("n", "<C-S-m>", "<Plug>(coc-diagnostic-prev)", { silent = true })
-vim.keymap.set("n", "<C-m>", "<Plug>(coc-diagnostic-next)", { silent = true })
-
--- git bindings
-vim.keymap.set("n", "<C-S-n>", "<Plug>(coc-git-nextchunk)")
-vim.keymap.set("n", "<leader>gnc", "<Plug>(coc-git-nextconflict)")
-vim.keymap.set("n", "<leader>gci", "<Plug>(coc-git-chunkinfo)")
-vim.keymap.set("n", "<leader>kr", ":CocCommand git.chunkUndo<CR>")
-
--- navigation
-vim.keymap.set("n", "gd", "<Plug>(coc-definition)", { silent = true })
-vim.keymap.set("n", "gD", ":call CocActionAsync('jumpDefinition')<CR>:wincmd v<CR>", { silent = true })
-vim.keymap.set("n", "gy", "<Plug>(coc-type-definition)", { silent = true })
-vim.keymap.set("n", "gi", "<Plug>(coc-implementation)", { silent = true })
-vim.keymap.set("n", "gr", "<Plug>(coc-references)", { silent = true })
-
-
--- highlight symbol under cursor
-vim.api.nvim_create_autocmd("CursorHold", {
-  callback = function()
-    vim.fn.CocActionAsync('highlight')
-  end
-})
-
--- rename
-vim.keymap.set("n", "<leader>rn", "<Plug>(coc-rename)")
-
--- code actions
-vim.keymap.set("x", "<leader>as", "<Plug>(coc-codeaction-selected)")
-vim.keymap.set("n", "<leader>ac", "<Plug>(coc-codeaction-cursor)")
-vim.keymap.set("n", "<leader>qf", "<Plug>(coc-fix-current)")
-vim.keymap.set("n", "<leader>re", "<Plug>(coc-codeaction-refactor)")
-vim.keymap.set("x", "<leader>rs", "<Plug>(coc-codeaction-refactor-selected)")
-vim.keymap.set("n", "<leader>rs", "<Plug>(coc-codeaction-refactor-selected)")
-vim.keymap.set("n", "<leader>cl", "<Plug>(coc-codelens-action)")
-
--- selection ranges
-vim.keymap.set("n", "<C-s>", "<Plug>(coc-range-select)", { silent = true })
-vim.keymap.set("x", "<C-s>", "<Plug>(coc-range-select)", { silent = true })
-
--- coc list mappings
-vim.keymap.set("n", "<space>a", ":<C-u>CocList diagnostics<CR>", { silent = true })
-vim.keymap.set("n", "<space>e", ":<C-u>CocList extensions<CR>", { silent = true })
-vim.keymap.set("n", "<space>c", ":<C-u>CocList commands<CR>", { silent = true })
-vim.keymap.set("n", "<space>o", ":<C-u>CocList outline<CR>", { silent = true })
-vim.keymap.set("n", "<space>s", ":<C-u>CocList -I symbols<CR>", { silent = true })
-vim.keymap.set("n", "<space>j", ":<C-u>CocNext<CR>", { silent = true })
-vim.keymap.set("n", "<space>k", ":<C-u>CocPrev<CR>", { silent = true })
-vim.keymap.set("n", "<space>p", ":<C-u>CocListResume<CR>", { silent = true })
-
-
--- commands
-vim.api.nvim_create_user_command("Format", function()
-  vim.fn.CocActionAsync('format')
-end, {})
-
-vim.api.nvim_create_user_command("Fold", function(opts)
-  vim.fn.CocAction('fold', opts.args)
-end, { nargs = '?' })
-
-vim.api.nvim_create_user_command("OR", function()
-  vim.fn.CocActionAsync('runCommand', 'editor.action.organizeImport')
-end, {})
-
--- formatting expr
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "typescript", "json" },
-  callback = function()
-    vim.bo.formatexpr = "v:lua.vim.fn.CocAction('formatSelected')"
-  end
-})
-
-vim.api.nvim_create_autocmd("User", {
-  pattern = "CocJumpPlaceholder",
-  callback = function()
-    vim.fn.CocActionAsync('showSignatureHelp')
-  end
-})
-
--- statusline
-vim.o.statusline = vim.o.statusline .. '%{coc#status()}%{get(b:,"coc_current_function","")}'
-
--- ***************************************************************************
 -- Telescope settings
 require('plugins/telescope-config')
 
@@ -439,7 +534,6 @@ require('plugins/treesitter')
 -- ***************************************************************************
 -- Airline
 vim.g.airline_powerline_fonts = 1
-vim.g.airline_theme = 'github_light'
 
 vim.g['airline#extensions#tabline#enabled'] = 1
 vim.g['airline#extensions#tabline#left_sep'] = ' '
@@ -459,13 +553,87 @@ vim.api.nvim_create_autocmd("User", {
 
 -- ***************************************************************************
 -- Others
+--
+-- Send all files recursively to quickfix list
+vim.api.nvim_create_user_command("QuickfixAllFilesRecursive", function(opts)
+  local dir = opts.args ~= "" and opts.args or vim.fn.getcwd()
+  local handle = io.popen("fd -t f . " .. vim.fn.shellescape(dir))
+  if handle then
+    local result = handle:read("*a")
+    handle:close()
+    if result ~= "" then
+      local qf_list = {}
+      for file in result:gmatch("[^\r\n]+") do
+        table.insert(qf_list, { filename = file, lnum = 1, col = 1, text = "" })
+      end
+      vim.fn.setqflist(qf_list, "r") -- replace quickfix list
+      vim.cmd("copen")
+    end
+  end
+end, {
+  nargs = "?", -- optional argument
+  complete = "dir" -- tab-completion for directories
+})
+
+-- Open all files recursive
+vim.api.nvim_create_user_command("OpenAllFilesRecursive", function(opts)
+  local dir = opts.args ~= "" and opts.args or vim.fn.getcwd()
+  local handle = io.popen("fd -t f . " .. vim.fn.shellescape(dir))
+  if handle then
+    local result = handle:read("*a")
+    handle:close()
+    if result ~= "" then
+      local files = {}
+      for file in result:gmatch("[^\r\n]+") do
+        table.insert(files, file)
+      end
+      vim.cmd("args " .. table.concat(files, " "))
+      vim.cmd("argdo edit")
+    end
+  end
+end, {
+  nargs = "?", -- optional argument
+  complete = "dir" -- tab-completion for directories
+})
 
 -- Normal mode: vertical split
 vim.keymap.set("n", "<leader>v", ":vsplit<CR>", { noremap = true, silent = true })
 
-vim.cmd([[
-  colorscheme morning
-]])
+local is_gui = vim.fn.has("gui_running") == 1
+    or vim.g.neovide
+    or vim.g.goneovim
+    or vim.g.nvy
+    or vim.g.vscode
+
+if is_gui then
+  vim.g.neovide_position_animation_length = 0
+  vim.g.neovide_cursor_animation_length = 0.00
+  vim.g.neovide_cursor_trail_size = 0
+  vim.g.neovide_cursor_animate_in_insert_mode = false
+  vim.g.neovide_cursor_animate_command_line = false
+  vim.g.neovide_scroll_animation_far_lines = 0
+  vim.g.neovide_scroll_animation_length = 0.00
+  -- Clipboard
+  vim.opt.clipboard:append { "unnamedplus" }
+  vim.keymap.set("v", "<D-c>", '"+y', { noremap = true, silent = true })
+  vim.keymap.set("n", "<D-v>", '"+p', { noremap = true, silent = true })
+  vim.keymap.set("i", "<D-v>", '<C-r>+', { noremap = true, silent = true })
+
+  vim.cmd("colorscheme github_dark_dimmed")
+else
+  vim.cmd("set background=light")
+  -- vim.cmd("colorscheme gruvbox-material")
+  -- vim.g.airline_theme = 'gruvbox_material'
+  -- vim.cmd('colorscheme catppuccin')
+  vim.cmd('colorscheme miniwinter')
+  if vim.g.colors_name == "miniwinter" then
+    vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
+    vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
+    vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
+    vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+  end
+  vim.g.airline_theme = 'tomorrow'
+end
 
 vim.api.nvim_create_user_command("W", function()
   if vim.bo.modified then
@@ -495,12 +663,10 @@ vim.keymap.set("n", "<F5>", function()
 end, { desc = "Random Colorscheme" })
 
 local function kill_all_buffers()
-  local file = vim.fn.expand("%:p")
   vim.cmd("bufdo bd")
-  vim.cmd("edit " .. file)
 end
 
-vim.keymap.set("n", "<leader>bd", kill_all_buffers, { desc = "Kill all buffers and reload current file" })
+vim.keymap.set("n", "<leader>bd", kill_all_buffers, { desc = "Kill all buffers" })
 
 -- Restore cursor to last position on buffer read
 vim.api.nvim_create_autocmd("BufReadPost", {
@@ -541,17 +707,20 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 vim.keymap.set("n", "<C-x>", ":w<CR>", { noremap = true, silent = true })
 
 -- Faster vertical navigation
-vim.keymap.set("n", "{", "8k", { noremap = true, silent = true })
-vim.keymap.set("n", "}", "8j", { noremap = true, silent = true })
+vim.keymap.set({ "n", "v" }, "{", "8k", { noremap = true, silent = true })
+vim.keymap.set({ "n", "v" }, "}", "8j", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-e>", "8<C-e>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-y>", "8<C-y>", { noremap = true, silent = true })
 
 -- Tab/Buffers workflow
 -- vim.keymap.set("n", "<C-j>", ":tabNext<CR>", { noremap = true, silent = true })
 -- vim.keymap.set("n", "<C-k>", ":tabnext<CR>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<C-t>", ":tabnew<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-j>", ":bprev<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-k>", ":bnext<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<C-t>", ":tabnew<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<C-t>", ":enew<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "[", ":cnext<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "]", ":cprev<CR>", { noremap = true, silent = true })
 
 -- Treesitter folding
 vim.opt.foldmethod = 'expr'
@@ -576,17 +745,15 @@ vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
 vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
 vim.api.nvim_set_hl(0, '@keyword', { bold = true })
 vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
-vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
-vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
-vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
-
-vim.api.nvim_set_hl(0, 'CocInlayHint', { italic = true, fg = '#d5d8da', bg = '#e7ebec' })
--- vim.api.nvim_set_hl(0, 'CocInlayParameterHint', { italic = true, fg = '#ff8800' })
--- vim.api.nvim_set_hl(0, 'CocInlayTypeHint', { italic = true, fg = '#ff8800' })
--- vim.api.nvim_set_hl(0, 'CocHintFloat', { italic = true, fg = '#ff8800' })
--- vim.api.nvim_set_hl(0, 'CocHintSign', { italic = true, fg = '#ff8800' })
-
+if not is_gui then
+  vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
+  vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
+  vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
+else
+  vim.api.nvim_set_hl(0, 'Number', { bold = true })
+end
 
 -- typescript
 vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
 
+-- require("plugins/tsconfig-alias-path") ToDo yet to debug it; Not working yet

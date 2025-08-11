@@ -1,8 +1,7 @@
 -- Coc settings
 vim.g.coc_global_extensions = {
   'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint', 'coc-graphql',
-  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-floaterm'
-  -- , 'coc-java'
+  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-floaterm', 'coc-java'
 }
 
 vim.opt.backup = false
@@ -68,8 +67,8 @@ vim.keymap.set("n", "<leader>gci", "<Plug>(coc-git-chunkinfo)")
 vim.keymap.set("n", "<leader>kr", ":CocCommand git.chunkUndo<CR>")
 
 -- navigation
-vim.keymap.set("n", "gd", "<Plug>(coc-definition)", { silent = true })
-vim.keymap.set("n", "gD", ":call CocActionAsync('jumpDefinition')<CR>:wincmd v<CR>", { silent = true })
+vim.keymap.set("n", "gD", "<Plug>(coc-definition)", { silent = true })
+vim.keymap.set("n", "gv", ":call CocActionAsync('jumpDefinition')<CR>:wincmd v<CR>", { silent = true })
 vim.keymap.set("n", "gy", "<Plug>(coc-type-definition)", { silent = true })
 vim.keymap.set("n", "gi", "<Plug>(coc-implementation)", { silent = true })
 vim.keymap.set("n", "gr", "<Plug>(coc-references)", { silent = true })

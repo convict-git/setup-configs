@@ -96,7 +96,8 @@ local function setup_jdtls()
     local bundles = get_bundles()
 
     -- Determine the root directory of the project by looking for these specific markers
-    local root_dir = jdtls.setup.find_root({ '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' });
+    -- local root_dir = jdtls.setup.find_root({ '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' });
+    local root_dir = jdtls.setup.find_root({ '.git' })
 
     -- Tell our JDTLS language features it is capable of
     local capabilities = {
@@ -128,7 +129,6 @@ local function setup_jdtls()
         '-Dlog.protocol=true',
         '-Dlog.level=ALL',
         '-Xmx20000m',
-        -- '-XX:MaxPermSize=12512m',
         '-Dsun.nio.fs.fileDescriptorsLimit=65536',
         '--add-modules=ALL-SYSTEM',
         '--add-opens', 'java.base/java.io=ALL-UNNAMED',
@@ -215,6 +215,13 @@ local function setup_jdtls()
                     profile = "GoogleStyle"
                 }
             },
+            project = {
+              referencedLibraries = {
+                  "/Users/priyanshu.shrivastav/.gradle/caches/modules-2/files-2.1/**/*.jar",
+                  "lib/**/*.jar",
+                  "/Users/priyanshu.shrivastav/Library/Java/JavaVirtualMachines/corretto-21.0.5/Contents/Home/lib/**/*.jar"
+              }
+            },
             -- Enable downloading archives from eclipse automatically
             eclipse = {
                 downloadSource = true
@@ -286,7 +293,7 @@ local function setup_jdtls()
             },
              -- If changes to the project will require the developer to update the projects configuration advise the developer before accepting the change
 
-            import = { gradle = { wrapper = { enabled = true } , offline = { enabled = true }} },
+            import = { gradle = { wrapper = { enabled = true } , offline = { enabled = true } } },
             configuration = {
                 updateBuildConfiguration = "disabled",
                 runtimes = {
@@ -375,6 +382,57 @@ local function sprint_boot_config()
     springboot_nvim.setup({})
 end
 
+local function nvim_cmp_config()
+    -- Gain access to the functions of the cmp plugin
+    local cmp = require("cmp")
+    -- Gain access to the function of the luasnip plugin
+    local luasnip = require("luasnip")
+
+    -- Lazily load the vscode like snippets
+    require("luasnip.loaders.from_vscode").lazy_load()
+
+    -- All the cmp setup function to configure our completion experience
+    cmp.setup({
+        -- How should completion options be displayed to us?
+        completion = {
+            -- menu: display options in a menu
+            -- menuone: automatically select the first option of the menu
+            -- preview: automatically display the completion candiate as you navigate the menu
+            -- noselect: prevent neovim from automatically selecting a completion option while navigating the menu
+            competeopt = "menu,menuone,preview,noselect"
+        },
+        -- setup snippet support based on the active lsp and the current text of the file
+        snippet = {
+            expand = function(args)
+                luasnip.lsp_expand(args.body)
+            end
+        },
+        -- setup how we interact with completion menus and options
+        mapping = cmp.mapping.preset.insert({
+             -- previous suggestion
+            ["<C-k>"] = cmp.mapping.select_prev_item(),
+            -- next suggestion
+            ["<C-j>"] = cmp.mapping.select_next_item(),
+            ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+            ["<C-f>"] = cmp.mapping.scroll_docs(4),
+            -- show completion suggestions
+            ["<C-Space"] = cmp.mapping.complete(),
+            -- close completion window
+            ["<C-e>"] = cmp.mapping.abort(),
+            -- confirm completion, only when you explicitly selected an option
+            ["<CR>"] = cmp.mapping.confirm({ select = false})
+        }),
+        -- Where and how should cmp rank and find completions
+        -- Order matters, cmp will provide lsp suggestions above all else
+        sources = cmp.config.sources({
+            { name = 'nvim_lsp' },
+            { name = 'luasnip' },
+            { name = 'buffer' },
+            { name = 'path' }
+        })
+    })
+end
+
 module.get = function(disabled)
   return {
     "mason-org/mason-lspconfig.nvim",
@@ -383,6 +441,30 @@ module.get = function(disabled)
     end,
     dependencies = {
       { "mason-org/mason.nvim", opts = {} },
+      {
+        "L3MON4D3/LuaSnip",
+        dependencies = {
+            -- feed luasnip suggestions to cmp
+            "saadparwaiz1/cmp_luasnip",
+            -- provide vscode like snippets to cmp
+            "rafamadriz/friendly-snippets",
+        }
+      },
+      {
+        "hrsh7th/cmp-nvim-lsp",
+      },
+      -- nvim-cmp provides auto completion and auto completion dropdown ui
+      {
+          "hrsh7th/nvim-cmp",
+          event = "InsertEnter",
+          dependencies = {
+              -- buffer based completion options
+              "hrsh7th/cmp-buffer",
+              -- path based completion options
+              "hrsh7th/cmp-path",
+          },
+          config = nvim_cmp_config,
+      },
       { "hrsh7th/cmp-nvim-lsp" },
       {
         "elmcgill/springboot-nvim",
@@ -416,6 +498,12 @@ module.get = function(disabled)
           local lspconfig = require('lspconfig')
           -- todo later add more lsp keymaps
           vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Code [G]oto [D]efinition" })
+          vim.keymap.set("n", "<leader>gD", vim.lsp.buf.declaration, { desc = "Code [G]oto [D]eclaration" })
+          vim.keymap.set("n", "<S-k>", vim.lsp.buf.hover, { desc = "[C]ode [H]over Documentation" })
+          vim.keymap.set({ "n", "v" }, "<leader>ac", vim.lsp.buf.code_action, { desc = "[C]ode [A]ctions" })
+          vim.keymap.set("n", "<leader>gr", require("telescope.builtin").lsp_references, { desc = "Code [G]oto [R]eferences" })
+          vim.keymap.set("n", "<leader>gi", require("telescope.builtin").lsp_implementations, { desc = "Code [G]oto [I]mplementations" })
+          vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Code [R]e[n]ame" })
         end,
       },
     },
