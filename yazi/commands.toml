@@ -1,0 +1,3 @@
+[print_files]
+run = "bash ~/file_content_for_gpt.sh $LIST | less"
+desc = "Print combined content of selected files"
