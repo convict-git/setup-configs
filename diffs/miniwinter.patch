@@ -1,0 +1,30 @@
+diff --git a/colors/miniwinter.lua b/colors/miniwinter.lua
+index 2cefdd9..76c7f9b 100644
+--- a/colors/miniwinter.lua
++++ b/colors/miniwinter.lua
+@@ -34,16 +34,16 @@ else
+     bg_edge2 = '#eff7fb', bg_edge = '#e5edf1', bg = '#dce4e8', bg_mid = '#bcc4c8', bg_mid2 = '#9ca4a7',
+     fg_edge2 = '#0f0d09', fg_edge = '#211e1a', fg = '#312e29', fg_mid = '#4c4944', fg_mid2 = '#6a6661',
+
+-    accent = '#014772', accent_bg = '#90ceff',
++    accent = '#014772', accent_bg = '#bcc4c8',
+
+-    red    = '#5c0113', red_bg    = '#ffaaaa',
+-    orange = '#6c3e00', orange_bg = '#ffc488',
+-    yellow = '#565600', yellow_bg = '#eaeb5f',
+-    green  = '#00562e', green_bg  = '#83ffb3',
+-    cyan   = '#016d71', cyan_bg   = '#6af9ff',
+-    azure  = '#014772', azure_bg  = '#90ceff',
+-    blue   = '#301d65', blue_bg   = '#beb3ff',
+-    purple = '#4f0b46', purple_bg = '#ffb3f6',
++    red    = '#5c0113', red_bg    = '#fac5c7',
++    orange = '#6c3e00', orange_bg = '#f2ccad',
++    yellow = '#565600', yellow_bg = '#d9d8aa',
++    green  = '#00562e', green_bg  = '#b8e1c1',
++    cyan   = '#016d71', cyan_bg   = '#a6e1e2',
++    azure  = '#014772', azure_bg  = '#b3daf9',
++    blue   = '#301d65', blue_bg   = '#d1cffb',
++    purple = '#4f0b46', purple_bg = '#edc7e7',
+   }
+ end
+
