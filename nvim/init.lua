@@ -171,7 +171,7 @@ require("lazy").setup({
     event = "VeryLazy",
     ---@type Flash.Config
     opts = {
-      labels = "sfghjklqwertyzvbnm",
+      labels = "sfghjklqwetyzvbnm",
       modes = {
         -- options used when flash is activated through
         -- a regular search with `/` or `?`
@@ -181,6 +181,9 @@ require("lazy").setup({
           enabled = true,
           highlight = { backdrop = false },
           jump = { history = false, register = false, nohlsearch = true },
+        },
+        char = {
+          keys = { "f", "F" },
         },
       }
     },
