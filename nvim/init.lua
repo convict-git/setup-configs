@@ -601,6 +601,10 @@ end, {
 
 -- Normal mode: vertical split
 vim.keymap.set("n", "<leader>v", ":vsplit<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>d", function()
+  vim.cmd('b#') -- switch to alternate buffer
+  vim.cmd('bd#') -- delete the previous buffer
+end, { desc = 'Close the current buffer and switch to previous' })
 
 local is_gui = vim.fn.has("gui_running") == 1
     or vim.g.neovide
