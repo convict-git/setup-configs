@@ -1,0 +1,81 @@
+[user]
+	name = Priyanshu Shrivastav
+	email = official.mr.convict@gmail.com
+[includeIf "gitdir:~/code/sprinklr/"]
+  path = ~/.gitconfig-sprinklr
+[alias]
+	last = --no-pager log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold dim white)%an%C(reset) %C(white)%s%C(reset) %C(green)(%ar)%C(reset)' --all
+	mlog = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(11,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)' --all
+	stash = stash --include-untracked
+	stashit = stash --include-untracked
+	s = status
+	su = status -uno
+	a = add
+	c = commit
+	st = stash --include-untracked
+	b = branch --sort=-committerdate
+	pro = pull --rebase origin
+	ch = checkout
+	fo = fetch origin
+	mnf = merge --no-ff
+	fchr = "!f() { git fetch origin $1 && git checkout $1 && git reset --hard origin/$1; }; f"
+	fchry = "!f() { git fetch origin $1 && git checkout $1 && git reset --hard origin/$1 && yarn; }; f"
+	vlog = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(10,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)'
+	graph = -c core.pager='less -S' log --pretty='tformat:%C(bold cyan)%h %C(blue)%<(10,trunc)%aN %<(50,trunc)%C(white)%s %C(auto)%d %C(dim green)%ar' --graph
+	olog = log --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(11,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)' --all
+	dv = difftool -t vimdiff -y
+  cam = "!f(){ msg=$(git log -1 --pretty=format:%s); [ \"$msg\" = \"convict\" ] && { git add -A; git commit --amend --no-edit --no-verify; } || { git add -A; git commit -m \"convict\" --no-verify; }; }; f"
+  files = diff-tree --no-commit-id --name-only -r
+  files-by-multi-pattern = "!f() { \
+    if [ \"$#\" -lt 2 ]; then \
+        echo 'Usage: git files-by-multi-pattern <commit_range_1> <commit_range_2> ... <pattern>'; \
+        return 1; \
+    fi; \
+    pattern=\"${@: -1}\"; \
+    ranges=\"${@:1:$#-1}\"; \
+    tmpfile=$(mktemp); \
+    for range in $ranges; do \
+        git diff --name-only $range | sort -u | while read -r file; do \
+            if git diff $range --unified=0 -- \"$file\" | rg -q \"^[+-].*$pattern\"; then \
+                echo \"$file $range\" >> \"$tmpfile\"; \
+            fi; \
+        done; \
+    done; \
+    awk '{files[$1] = (files[$1] ? files[$1] \" \" : \"\") $2} END {for (file in files) print file \": \" files[file]}' \"$tmpfile\"; \
+    rm -f \"$tmpfile\"; \
+  }; f"
+  files-by-pattern = "!f() { \
+      if [ \"$#\" -ne 2 ]; then \
+          echo 'Usage: git files-by-pattern <commit_range> <pattern>'; \
+          return 1; \
+      fi; \
+      range=\"$1\"; \
+      pattern=\"$2\"; \
+      git files \"$range\" | sort -u | while read -r file; do \
+    if git diff \"$range\" --unified=0 -- \"$file\" | rg -q \"^[+-].*$pattern\"; then \
+              echo \"$file\"; \
+          fi; \
+      done; \
+  }; f"
+[help]
+	autocorrect = 20
+[diff]
+  tool = idea
+[difftool "idea"]
+  cmd = code --wait --diff $LOCAL $REMOTE
+[merge]
+  tool = vscode
+[mergetool "vscode"]
+  cmd = code --wait $MERGED
+
+[init]
+	defaultBranch = main
+
+[oh-my-zsh]
+	hide-dirty = 1
+[http]
+	postBuffer = 524288000
+[feature]
+	manyFiles = true
+
+
