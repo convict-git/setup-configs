@@ -736,6 +736,7 @@ vim.opt.foldlevel = 99
 
 -- nvim-ufo -- Source external Vimscript config (for backward compatibility)
 require('plugins/nvim-ufo')
+require('plugins/remote_file_server')
 
 -- Visual mode: yank to system clipboard
 vim.keymap.set("x", "<leader>y", '"+y', { silent = true })
