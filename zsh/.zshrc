@@ -189,7 +189,7 @@ export PATH=${JAVA_HOME}:$OPEN_JDK_PATH:$HOMEBREW_PATH:$HOME/.cargo/bin:/opt/hom
 
 f() {
   cd $HOME
-  result=$(fd --type d --max-depth 5 \
+  result=$(fd-cache --type d --max-depth 5 \
         --exclude node_modules --exclude '.*' \
         --full-path "($HOME/code|$HOME/convict)" | sed "s|^$HOME/||" | fzf)
   cd $HOME/$result
@@ -197,7 +197,7 @@ f() {
 }
 
 fme() {
-  result=$(fd --type d --max-depth 5 \
+  result=$(fd-cache --type d --max-depth 5 \
         --exclude node_modules --exclude '.*' \
         --full-path . | fzf)
   cd $result
