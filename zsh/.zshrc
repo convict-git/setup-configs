@@ -184,7 +184,7 @@ noti() {
 export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
 POWERLEVEL10K_DISABLE_GITSTATUS=true
 alias g='git'
-export PATH=${JAVA_HOME}:$OPEN_JDK_PATH:$HOMEBREW_PATH:$HOME/.cargo/bin:/opt/homebrew/bin/nvim:/opt/homebrew/opt/python@3.10/bin:$GRADLE_HOME:$GRADLE_USER_HOME:$LLVM_PATH:$CODELLDB_PATH:$PATH
+export PATH=${JAVA_HOME}:$OPEN_JDK_PATH:$HOMEBREW_PATH:$HOME/.cargo/bin:/opt/homebrew/bin/nvim:/opt/homebrew/opt/python@3.10/bin:$GRADLE_HOME:$GRADLE_USER_HOME:$LLVM_PATH:$CODELLDB_PATH:$HOME/.local/bin:$PATH
 # export PATH=${JAVA_HOME}:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PYENV_ROOT/shims:$HOME/.cargo/bin:$PATH
 
 f() {
