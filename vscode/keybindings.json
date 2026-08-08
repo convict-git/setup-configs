@@ -35,9 +35,9 @@
     "when": "editorTextFocus && inDebugMode"
   },
   {
-    "key": "cmd+h",
+    "key": "shift+k",
     "command": "editor.action.showHover",
-    "when": "editorTextFocus"
+    "when": "editorTextFocus && (vim.mode == 'Normal' || vim.mode == 'Visual')"
   },
   {
     "key": "cmd+k cmd+i",
