@@ -3,6 +3,8 @@
 	email = official.mr.convict@gmail.com
 [includeIf "gitdir:~/code/sprinklr/"]
   path = ~/.gitconfig-sprinklr
+[includeIf "gitdir:~/code/sprinklr-others/"]
+  path = ~/.gitconfig-sprinklr
 [alias]
 	last = --no-pager log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold dim white)%an%C(reset) %C(white)%s%C(reset) %C(green)(%ar)%C(reset)' --all
 	mlog = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(11,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)' --all
@@ -61,7 +63,7 @@
 	autocorrect = 20
 [diff]
   tool = idea
-[difftool "idea"]
+[difftool "cursor"]
   cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
   tool = vscode

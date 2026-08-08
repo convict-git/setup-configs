@@ -1,0 +1,48 @@
+" ============================
+" Basic settings
+" ============================
+set number
+set ignorecase
+set smartcase
+set incsearch
+set tabstop=2
+set shiftwidth=2
+set expandtab
+set autoindent
+set smartindent
+set wrap
+
+" ============================
+" Keymaps that work in VSCodeVim
+" ============================
+
+" Save with Ctrl-X (your remap)
+nnoremap <C-x> :w<CR>
+
+" Vertical split
+nnoremap <leader>v :vsplit<CR>
+
+" Close current buffer & go to previous (VSCode doesn't have buffers, use close editor)
+nnoremap <leader>d :close<CR>
+
+" Clipboard (VSCode handles system clipboard automatically, but mappings still allowed)
+xnoremap <leader>y "+y
+
+" Faster navigation
+nnoremap { 8k
+nnoremap } 8j
+nnoremap <C-e> 8<C-e>
+nnoremap <C-y> 8<C-y>
+
+" Buffer-like workflow mapped to VSCode tabs
+nnoremap <C-j> :tabprevious<CR>
+nnoremap <C-k> :tabnext<CR>
+nnoremap <C-t> :tabnew<CR>
+
+" Quickfix workflow → VSCode "Problems" navigation
+nnoremap [ :cnext<CR>
+nnoremap ] :cprev<CR>
+
+" Reload config
+nnoremap <leader>rc :tabnew ~/.vscodevimrc<CR>
+

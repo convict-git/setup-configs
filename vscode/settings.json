@@ -1,0 +1,368 @@
+{
+  "fileHeaderCommentHelper.languageConfigs": {
+    "language_javascript": {
+      "template": ["/*", " * Created by: Priyanshu Shrivastav", " */"]
+    },
+    "language_typescript": {
+      "template": ["/*", " * Created by: Priyanshu Shrivastav", " */"]
+    }
+  },
+  "window.restoreFullscreen": true,
+  "window.newWindowDimensions": "maximized",
+  "workbench.editorAssociations": {
+    "*.md": "default",
+    "git-rebase-todo": "gitlens.rebase"
+  },
+  "editor.fontFamily": "Deimos",
+  "workbench.iconTheme": "material-icon-theme",
+  "editor.cursorStyle": "line",
+  "editor.lineNumbers": "on",
+  "editor.wordSeparators": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-",
+  "editor.wordWrap": "off",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.tabSize": 3,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.colorCustomizations": {
+    "terminal.ansiBrightGreen": "#56BF8B",
+    "terminal.ansiGreen": "#56BF8B"
+  },
+  "customizeUI.font.monospace": "Red Hat Mono",
+  "editor.inlayHints.fontFamily": "Red Hat Mono",
+  "customizeUI.font.regular": "Red Hat Mono",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "editor.find.cursorMoveOnType": false,
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "terminal.integrated.env.windows": {
+    "LC_ALL": "C.UTF-8"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "eslint.format.enable": true,
+  "editor.formatOnPaste": true,
+  "typescript.format.enable": false,
+  "editor.formatOnSave": true,
+  "cmake.configureOnOpen": true,
+  "editor.fontLigatures": true,
+  "cSpell.userWords": [
+    "accum",
+    "CHANNELDATA",
+    "CSAT",
+    "Cust",
+    "Deletable",
+    "entityid",
+    "favourite",
+    "FRESHDESK",
+    "javac",
+    "Mihir",
+    "MILLIS",
+    "Minimised",
+    "MULTISELECT",
+    "myshopify",
+    "noob",
+    "noobs",
+    "Parens",
+    "PICKLIST",
+    "priyanshu",
+    "Rahul",
+    "RICHTEXT",
+    "SCHEDULETIME",
+    "semibold",
+    "Shifu",
+    "Shrivastav",
+    "SNTYPES",
+    "spaceweb",
+    "sprinklr",
+    "testid",
+    "Typenames",
+    "Unhide",
+    "Updation",
+    "WALKME"
+  ],
+  "errorLens.enabled": true,
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "editor.lineHeight": 22,
+  "errorLens.fontSize": "11",
+  "inline-parameters.enabled": true,
+  "problems.showCurrentInStatus": true,
+  "vscode-edge-devtools.mirrorEdits": true,
+  "gitlab.showPipelineUpdateNotifications": true,
+  "debug.console.lineHeight": 16,
+  "gitlens.views.branches.branches.layout": "list",
+  "editor.foldingHighlight": true,
+  "editor.foldingImportsByDefault": true,
+  "editor.folding": true,
+  "gitlens.views.searchAndCompare.files.layout": "tree",
+  "errorLens.enabledDiagnosticLevels": ["warning", "info"],
+  "gitlens.views.commits.files.layout": "tree",
+  "gitlens.advanced.messages": {
+    "suppressGitMissingWarning": true
+  },
+  "remote.SSH.remotePlatform": {
+    "DESKTOP-7F18NH2": "linux",
+    "sandbox.txfyx4.csb": "linux"
+  },
+  "window.titleBarStyle": "custom",
+  "gitlens.hovers.currentLine.over": "line",
+  "git.suggestSmartCommit": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "workbench.editor.wrapTabs": true,
+  "codestream.serverUrl": "https://api.codestream.com",
+  "codestream.email": "official.mr.convict@gmail.com",
+  "turboConsoleLog.addSemicolonInTheEnd": true,
+  "turboConsoleLog.logMessagePrefix": "convict 🐞: ",
+  "turboConsoleLog.quote": "'",
+  "todo-tree.general.tags": [
+    "todo sup-console",
+    "todo live-translation",
+    "todo live-chat",
+    "todo unread-count",
+    "todo version-upgrade",
+    "todo convict:"
+  ],
+  "gitlens.views.fileHistory.avatars": false,
+  "npm.keybindingsChangedWarningShown": true,
+  "debug.console.fontSize": 13,
+  "customizeUI.fontSizeMap": {
+    "13px": "13px",
+    "monospace": "11px"
+  },
+  "customizeUI.statusBarPosition": "top",
+  "bracketLens.languageConfiguration": {
+    "ignoreCase": false,
+    "comments": {
+      "block": [
+        {
+          "opening": "/*",
+          "closing": "*/"
+        }
+      ],
+      "line": ["//"]
+    },
+    "brackets": {
+      "symbol": [
+        {
+          "opening": "(",
+          "closing": ")",
+          "headerMode": "smart",
+          "inters": []
+        },
+        {
+          "opening": "[",
+          "closing": "]",
+          "headerMode": "smart",
+          "inters": []
+        },
+        {
+          "opening": "{",
+          "closing": "}",
+          "headerMode": "smart",
+          "inters": []
+        }
+      ],
+      "word": []
+    },
+    "strings": {
+      "inline": [
+        {
+          "opening": "\"",
+          "closing": "\"",
+          "escape": ["\\\\", "\\\""]
+        },
+        {
+          "opening": "'",
+          "closing": "'",
+          "escape": ["\\\\", "\\'"]
+        }
+      ],
+      "multiline": [
+        {
+          "opening": "`",
+          "closing": "`",
+          "escape": ["\\\\", "\\`"]
+        }
+      ]
+    },
+    "terminators": [";", ","],
+    "ignoreSymbols": ["\\//"]
+  },
+  "bracketLens.maxBracketHeaderLength": 100,
+  "bracketLens.line": "start-line-number",
+  "bracketLens.color": "#ababad",
+  "redhat.telemetry.enabled": false,
+  "atlascode.jira.enabled": true,
+  "atlascode.bitbucket.enabled": false,
+  "atlascode.jira.jqlList": [
+    {
+      "id": "5660881b-9a21-4a19-99e1-30d90624c8c2",
+      "siteId": "95531a2e-c5af-4074-bf24-7cbaf74d4a25",
+      "filterId": "59715",
+      "name": "ps-ssc",
+      "query": "assignee in (60be0e34a174630070419314) AND status in (\"Backlog(Dev)\", \"In Progress\", \"In Dev Review\", \"QA Rejected\") AND labels not in (\"17.7\") ORDER BY created DESC, priority DESC",
+      "enabled": true,
+      "monitor": true
+    },
+    {
+      "id": "dca8a5cc-e2c2-4ca3-9297-61c174e56012",
+      "enabled": true,
+      "name": "My sprinklr Issues",
+      "query": "assignee = currentUser() AND resolution = Unresolved ORDER BY lastViewed DESC",
+      "siteId": "95531a2e-c5af-4074-bf24-7cbaf74d4a25",
+      "monitor": true
+    }
+  ],
+  "gitlens.currentLine.format": "${author, }${agoOrDate}${' via 'pullRequest}${ • message|100?} ${tips}",
+  "gitlens.codeLens.scopes": ["document"],
+  "gitlens.blame.ignoreWhitespace": true,
+  "atlascode.jira.startWorkBranchTemplate.customPrefixes": [
+    "{{{prefix}}}{{{issueKey}}}-{{{summary}}}"
+  ],
+  "parameterHints.hintingType": "variableOnly",
+  "parameterHints.padding": "2 5",
+  "editor.codeLensFontSize": 18,
+  "diffEditor.codeLens": true,
+  "editor.minimap.enabled": false,
+  "gitlens.codeLens.includeSingleLineSymbols": true,
+  "errorLens.messageTemplate": "$source » $message ● $code",
+  "eslint.rules.customizations": [
+    {
+      "rule": "import/extensions",
+      "severity": "off"
+    },
+    {
+      "rule": "import/no-unresolved",
+      "severity": "off"
+    }
+  ],
+  "terminal.integrated.fontSize": 19,
+  "atlascode.bitbucket.statusbar.enabled": false,
+  "atlascode.bitbucket.statusbar.showLogin": false,
+  "atlascode.jira.statusbar.showProduct": false,
+  "atlascode.jira.statusbar.showUser": false,
+  "router-explorer.root.directory.name": "apps/care-app/pages",
+  "bookmarks.useWorkaroundForFormatters": true,
+  "bookmarks.sideBar.expanded": true,
+  "bookmarks.keepBookmarksOnLineDelete": true,
+  "editor.hover.delay": 200,
+  "workbench.hover.delay": 500,
+  "scm.inputFontFamily": "Red Hat Mono",
+  "debug.console.fontFamily": "Red Hat Mono",
+  "errorLens.fontFamily": "Red Hat Mono",
+  "gitlens.statusBar.tooltipFormat": "${author}__, ${ago}${' via 'pullRequest} &nbsp; _(${date})_ \n${id}\n${message}${\n\n---\n\nfootnotes}\n\n${commands}",
+  "errorLens.statusBarColorsEnabled": true,
+  "git.optimisticUpdate": false,
+  "customizeUI.activityBarHideSettings": true,
+  "window.zoomLevel": 1,
+  "editor.largeFileOptimizations": false,
+  "search.exclude": {
+    "**/dist/": true,
+    "**/.babel-cache/": true,
+    "**/build/": true,
+    "**/.next/": true,
+    "**/*.logs": true,
+    "**/*.xml": true,
+    "**/*.yml": true,
+    ".gitignore": true,
+    "**/*.scss": true,
+    "**/*.lock": true,
+    "**/*.config.js": true,
+    "**/*.example": true,
+    "**/node_modules": true,
+    ".git/": true,
+    "**/*.tsbuildinfo": true
+  },
+  "gradle.allowParallelRun": true,
+  "gradle.debug": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "typescript.tsserver.maxTsServerMemory": 20000,
+  "typescript.tsserver.nodePath": "node",
+  "files.autoSave": "afterDelay",
+  "editor.fontSize": 18.2,
+  "editor.letterSpacing": 1,
+  "editor.fontWeight": 700,
+  "editor.codeLensFontFamily": "Deimos",
+  "terminal.integrated.fontWeight": "800",
+  "terminal.integrated.letterSpacing": 2,
+  "terminal.integrated.fontWeightBold": "bold",
+  "terminal.integrated.lineHeight": 1.3,
+  "terminal.integrated.mouseWheelScrollSensitivity": 2,
+  "terminal.integrated.fastScrollSensitivity": 2,
+  "gitlab.duoChat.enabled": false,
+  "gitlab.duoAgentPlatform.enabled": false,
+  "gitlab.duo.enabledWithoutGitlabProject": false,
+  "gitlab.keybindingHints.enabled": false,
+  "gitlab.duoCodeSuggestions.openTabsContext": false,
+  "gitlab.real-timeSecurityScan.scanFileOnSave": false,
+  "gitlab.branchProtection": false,
+  "diffEditor.useInlineViewWhenSpaceIsLimited": false,
+  "[jsonc]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "eslint.lintTask.enable": true,
+  "eslint.run": "onSave",
+  "eslint.useFlatConfig": true,
+  "terminal.integrated.scrollback": 10000000,
+  "terminal.integrated.smoothScrolling": true,
+  "vim.vimrc.enable": true,
+  "vim.vimrc.path": "~/.vscodevimrc",
+  "vim.sneak": true,
+  "vim.easymotion": true,
+  "vim.camelCaseMotion.enable": true,
+  "vim.replaceWithRegister": true,
+  "vim.cursorStylePerMode.visual": "underline",
+  "vim.foldfix": true,
+  "vim.matchpairs": "(:),{:},[:],':',\":\",`:`",
+  "vim.hlsearch": true,
+  "workbench.colorTheme": "Cursor Dark Midnight",
+  "git.openRepositoryInParentFolders": "always",
+  "scm.inputFontSize": 18,
+  "editor.suggestFontSize": 18,
+  "cursor.composer.shouldChimeAfterChatFinishes": true,
+  "gitlab.duoCodeSuggestions.enabled": false,
+  "cursor.cpp.disabledLanguages": ["plaintext"],
+  "typescript.experimental.useTsgo": true,
+  "typescript.native-preview.goMemLimit": "15GiB",
+  "apollographql.debug.revealOutputOnLanguageServerError": false,
+  "atlascode.rovodev.enabled": true,
+  "window.autoDetectColorScheme": false,
+  "atlascode.jira.lastCreatePreSelectedValues": {
+    "siteId": "",
+    "projectKey": "",
+    "issueTypeId": ""
+  },
+  "workbench.editor.autoLockGroups": {
+    "mainThreadWebview-markdown.preview": true
+  },
+  "cursor.composer.planTextSizeScale": "1",
+  "editor.experimental.preferTreeSitter.typescript": true,
+  "cursor.composer.conversationDensity": "detailed",
+  "cursor.composer.textSizeScale": 1.3,
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true,
+    "rules": {
+      "operator": {
+        "bold": true
+      }
+    }
+  }
+}
