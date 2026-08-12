@@ -118,7 +118,8 @@
   },
   "remote.SSH.remotePlatform": {
     "DESKTOP-7F18NH2": "linux",
-    "sandbox.txfyx4.csb": "linux"
+    "sandbox.txfyx4.csb": "linux",
+    "convict-mac": "macOS"
   },
   "window.titleBarStyle": "custom",
   "gitlens.hovers.currentLine.over": "line",
