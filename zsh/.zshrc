@@ -134,6 +134,7 @@ export LLVM_PATH="/opt/homebrew/opt/llvm/bin"
 export OPEN_JDK_PATH="/opt/homebrew/opt/openjdk/bin"
 export HOMEBREW_PATH="/opt/homebrew/bin"
 export CODELLDB_PATH="$HOME/.local/share/codelldb/extension/adapter"
+export RUST_TOOLCHAIN="$HOME/.rustup/toolchains/nightly-aarch64-apple-darwin/bin"
 
 export NVM_LAZY_LOAD=true
 export NVM_DIR="$HOME/.nvm"
@@ -184,7 +185,7 @@ noti() {
 export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
 POWERLEVEL10K_DISABLE_GITSTATUS=true
 alias g='git'
-export PATH=${JAVA_HOME}:$OPEN_JDK_PATH:$HOMEBREW_PATH:$HOME/.cargo/bin:/opt/homebrew/bin/nvim:/opt/homebrew/opt/python@3.10/bin:$GRADLE_HOME:$GRADLE_USER_HOME:$LLVM_PATH:$CODELLDB_PATH:$HOME/.local/bin:$PATH
+export PATH=${JAVA_HOME}:$OPEN_JDK_PATH:$HOMEBREW_PATH:$HOME/.cargo/bin:/opt/homebrew/bin/nvim:/opt/homebrew/opt/python@3.10/bin:$GRADLE_HOME:$GRADLE_USER_HOME:$LLVM_PATH:$CODELLDB_PATH:$RUST_TOOLCHAIN:$HOME/.local/bin:$PATH
 # export PATH=${JAVA_HOME}:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PYENV_ROOT/shims:$HOME/.cargo/bin:$PATH
 
 f() {

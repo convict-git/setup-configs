@@ -22,6 +22,8 @@
 	mnf = merge --no-ff
 	fchr = "!f() { git fetch origin $1 && git checkout $1 && git reset --hard origin/$1; }; f"
 	fchry = "!f() { git fetch origin $1 && git checkout $1 && git reset --hard origin/$1 && yarn; }; f"
+	foam = "!f() { git fetch origin $1 && git merge "origin/$1"; }; f"
+	foams = "!f() { git fetch origin $1 && git merge --squash "origin/$1"; }; f"
 	vlog = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(10,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)'
 	graph = -c core.pager='less -S' log --pretty='tformat:%C(bold cyan)%h %C(blue)%<(10,trunc)%aN %<(50,trunc)%C(white)%s %C(auto)%d %C(dim green)%ar' --graph
 	olog = log --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(11,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)' --all

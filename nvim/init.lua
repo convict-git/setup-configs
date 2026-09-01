@@ -627,20 +627,42 @@ if is_gui then
   vim.keymap.set("i", "<D-v>", '<C-r>+', { noremap = true, silent = true })
 
   vim.cmd("colorscheme github_dark_dimmed")
-else
-  vim.cmd("set background=light")
-  -- vim.cmd("colorscheme gruvbox-material")
-  -- vim.g.airline_theme = 'gruvbox_material'
-  -- vim.cmd('colorscheme catppuccin')
-  vim.cmd('colorscheme miniwinter')
-  if vim.g.colors_name == "miniwinter" then
-    vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
-    vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
-    vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
-    vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
-  end
-  vim.g.airline_theme = 'tomorrow'
+-- else
+--   vim.cmd("set background=dark")
+--   -- vim.g.airline_theme = 'tomorrow'
+--   -- vim.cmd("colorscheme gruvbox-material")
+--   -- vim.g.airline_theme = 'gruvbox_material'
+--   -- vim.cmd('colorscheme catppuccin')
+--   -- vim.cmd('colorscheme miniwinter')
+--   --vim.cmd('colorscheme nord')
+--   vim.cmd('colorscheme everforest')
+--   if vim.g.colors_name == "miniwinter" then
+--     vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
+--     vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
+--     vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
+--     vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+--   end
 end
+
+-- color settings for diff
+vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
+vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
+vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
+vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "*",
+  callback = function()
+
+    if vim.bo.filetype == "markdown" then
+      vim.cmd("set background=light")
+      vim.cmd("colorscheme github_light") -- Theme for markdown
+    else
+      vim.cmd("set background=dark")
+      vim.cmd("colorscheme everforest") -- Theme for everything else
+    end
+  end,
+})
 
 vim.api.nvim_create_user_command("W", function()
   if vim.bo.modified then

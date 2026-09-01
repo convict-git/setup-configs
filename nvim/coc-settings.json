@@ -5,6 +5,7 @@
   "diagnostic.virtualText": true,
   "diagnostic.virtualTextCurrentLineOnly": false,
   "diagnostic.virtualTextPrefix": "■■ ",
+  "eslint.experimental.useFlatConfig": true,
   "eslint.rules.customizations": [
     { "rule": "max-lines-per-function", "severity": "off" },
     { "rule": "max-lines", "severity": "off" },
@@ -27,6 +28,20 @@
   "rust-analyzer.debug.runtime": "nvim-dap",
   "rust-analyzer.debug.nvimdap.configuration.template": "require('plugins/dap').get_configuration_template($exe, $args)",
   "coc.preferences.formatOnSave": true,
+  "languageserver": {
+    "tsgo": {
+      "command": "tsgo",
+      "args": ["--lsp", "--stdio"],
+      "filetypes": [
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact"
+      ],
+      "rootPatterns": ["tsconfig.json", "jsconfig.json", ".git/"]
+    }
+  },
+  "tsserver.enable": false,
   "tsserver.maxTsServerMemory": 24000,
   "tsserver.experimental.enableProjectDiagnostics": false,
   "tsserver.useLocalTsdk": true,
@@ -74,5 +89,9 @@
       "path": "/Users/priyanshu.shrivastav/Library/Java/JavaVirtualMachines/corretto-21.0.5/Contents/Home",
       "default": true
     }
-  ]
+  ],
+  "json.schemaDownload.trustedDomains": {
+    "https://www.schemastore.org": true,
+    "https://json.schemastore.org": true
+  }
 }

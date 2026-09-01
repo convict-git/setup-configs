@@ -111,7 +111,9 @@
   "editor.foldingImportsByDefault": true,
   "editor.folding": true,
   "gitlens.views.searchAndCompare.files.layout": "tree",
-  "errorLens.enabledDiagnosticLevels": ["warning", "info"],
+  "errorLens.enabledDiagnosticLevels": [
+    "info"
+  ],
   "gitlens.views.commits.files.layout": "tree",
   "gitlens.advanced.messages": {
     "suppressGitMissingWarning": true
@@ -295,8 +297,8 @@
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
-  "typescript.tsserver.maxTsServerMemory": 20000,
-  "typescript.tsserver.nodePath": "node",
+  "js/ts.tsserver.maxMemory": 16000,
+  "js/ts.tsserver.node.path": "node",
   "files.autoSave": "afterDelay",
   "editor.fontSize": 18.2,
   "editor.letterSpacing": 1,
@@ -331,7 +333,6 @@
   "vim.camelCaseMotion.enable": true,
   "vim.replaceWithRegister": true,
   "vim.cursorStylePerMode.visual": "underline",
-  "vim.foldfix": true,
   "vim.matchpairs": "(:),{:},[:],':',\":\",`:`",
   "vim.hlsearch": true,
   "workbench.colorTheme": "Cursor Dark Midnight",
@@ -340,8 +341,9 @@
   "editor.suggestFontSize": 18,
   "cursor.composer.shouldChimeAfterChatFinishes": true,
   "gitlab.duoCodeSuggestions.enabled": false,
-  "cursor.cpp.disabledLanguages": ["plaintext"],
-  "typescript.experimental.useTsgo": true,
+  "cursor.cpp.disabledLanguages": [
+    "plaintext"
+  ],
   "typescript.native-preview.goMemLimit": "15GiB",
   "apollographql.debug.revealOutputOnLanguageServerError": false,
   "atlascode.rovodev.enabled": true,
@@ -354,7 +356,7 @@
   "workbench.editor.autoLockGroups": {
     "mainThreadWebview-markdown.preview": true
   },
-  "cursor.composer.planTextSizeScale": "1",
+  "cursor.composer.planTextSizeScale": "1.15",
   "editor.experimental.preferTreeSitter.typescript": true,
   "cursor.composer.conversationDensity": "detailed",
   "cursor.composer.textSizeScale": 1.3,
@@ -369,5 +371,17 @@
   "[cpp]": {
     "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   },
-  "editor.fontVariations": false
+  "editor.fontVariations": false,
+  "security.promptForLocalFileProtocolHandling": false,
+  "cursor.composer.codeBlockWordWrap": true,
+  "diffEditor.renderSideBySide": true,
+  "diffEditor.hideUnchangedRegions.enabled": true,
+  "diffEditor.ignoreTrimWhitespace": true,
+  "markdown.preview.fontFamily": "Red Hat Mono",
+  "markdown.preview.fontSize": 15,
+  "cursor.general.fontSmoothingAntialiased_v2": false,
+  "js/ts.experimental.useTsgo": true,
+  "typescript.experimental.useTsgo": true,
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
+  "js/ts.tsserver.experimental.useBundledNode": false
 }
