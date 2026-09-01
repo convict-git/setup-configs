@@ -434,6 +434,10 @@ require("lazy").setup({
   -- === Treesitter ===
   {
     "nvim-treesitter/nvim-treesitter",
+    -- Pin to the classic `master` branch: this config uses the pre-rewrite
+    -- API (`require'nvim-treesitter.configs'.setup`), which the new default
+    -- `main` branch removed.
+    branch = "master",
     build = ":TSUpdate",
   },
 
