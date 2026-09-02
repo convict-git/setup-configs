@@ -33,7 +33,7 @@ vim.opt.encoding = "utf-8" -- Encoding
 vim.opt.matchpairs = { "(:)", "{:}", "[:]", "<:>", "':'", "\":\"" } -- Matching pairs
 vim.opt.errorbells = false -- Disable error bells
 vim.opt.belloff = "all"
-vim.opt.foldmethod = "syntax" -- Syntax-based folding
+-- foldmethod is managed by nvim-ufo (avoid slow syntax/expr folding on big files)
 vim.opt.mouse = "a" -- Enable mouse
 vim.opt.mousemoveevent = true
 vim.opt.previewheight = 25 -- Preview window height
@@ -50,6 +50,12 @@ vim.opt.compatible = false -- Not compatible with old vi
 vim.cmd("filetype off") -- Required for plugins (used to be needed with vim-plug or pathogen)
 vim.cmd("filetype plugin indent on")
 vim.cmd("syntax on") -- Enable syntax highlighting (again, for good measure)
+
+-- ***************************************************************************
+-- Big-file performance guard: disables heavy features (treesitter, CoC, syntax,
+-- folding) for buffers >= 512 KB or >= 2500 lines. Registered early so its
+-- autocmds fire before any plugin attaches to a buffer.
+require('plugins/bigfile')
 
 -- ***************************************************************************
 local cwd = vim.fn.getcwd()
@@ -77,14 +83,18 @@ require("lazy").setup({
   { 'tpope/vim-fugitive' },
   -- { 'rust-lang/rust.vim' }, // ToDo
   { 'rhysd/vim-clang-format' },
-  { 'octol/vim-cpp-enhanced-highlight' },
+  -- Removed 'octol/vim-cpp-enhanced-highlight': redundant regex C/C++ highlighting,
+  -- superseded by the treesitter `cpp` parser (and slow on large C/C++ files).
   { 'vim-airline/vim-airline' },
   { 'vim-airline/vim-airline-themes' },
-  { 'ap/vim-css-color'},
+  -- Removed 'ap/vim-css-color': duplicate of 'brenoprata10/nvim-highlight-colors'
+  -- below (two plugins highlighting the same color codes).
   { 'jiangmiao/auto-pairs', lazy = false },
-  { 'preservim/tagbar' },
+  { 'preservim/tagbar', cmd = { "TagbarToggle", "TagbarOpen", "Tagbar" } },
   { 'NLKNguyen/papercolor-theme' },
   { 'voldikss/vim-floaterm',
+    cmd = { "FloatermNew", "FloatermToggle" },
+    keys = { "<S-t>", "<leader>tr" },
     config = function()
       vim.keymap.set("n", "<S-t>", ":FloatermToggle!<CR>", { silent = true })
       vim.keymap.set("n", "<leader>tr", ":FloatermNew --height=0.15 --width=0.3 --autoclose=2 --position=topright<CR>", { silent = true })
@@ -132,6 +142,7 @@ require("lazy").setup({
  },
  -- === highlighting colors in neovim ===
  { 'brenoprata10/nvim-highlight-colors',
+   event = "BufReadPost",
    config = function()
      vim.opt.termguicolors = true
      require('nvim-highlight-colors').setup({})
@@ -158,6 +169,7 @@ require("lazy").setup({
  {
     "andythigpen/nvim-coverage",
     version = "*",
+    cmd = { "Coverage", "CoverageLoad", "CoverageShow", "CoverageHide", "CoverageToggle", "CoverageClear", "CoverageSummary" },
     config = function()
       require("coverage").setup({
         auto_reload = true,
@@ -227,11 +239,14 @@ require("lazy").setup({
       -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
       ---@module 'render-markdown'
       ---@type render.md.UserConfig
+     ft = { "markdown" },
      opts = {},
   },
   -- == Floating todo ==
   {
     'vimichael/floatingtodo.nvim',
+    cmd = "Td",
+    keys = { "<leader>1" },
     config = function()
       require('floatingtodo').setup({
         target_file = "~/notes/todo.md",
@@ -246,6 +261,7 @@ require("lazy").setup({
   -- == Search and replace for bigger projects ==
   {
     'MagicDuck/grug-far.nvim',
+    cmd = "GrugFar",
     config = function()
       require('grug-far').setup({
       });
@@ -350,6 +366,8 @@ require("lazy").setup({
   -- === neogit ===
   {
     "NeogitOrg/neogit",
+    cmd = { "Neogit", "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
+    keys = { "<leader>gs", "<leader>sg" },
     dependencies = {
       'nvim-tree/nvim-web-devicons',
       "nvim-lua/plenary.nvim",         -- required
@@ -442,6 +460,7 @@ require("lazy").setup({
 
   -- === Dropbar ===
   { "Bekaboo/dropbar.nvim",
+     event = "BufReadPost",
      dependencies = {
        'nvim-telescope/telescope-fzf-native.nvim',
       },
@@ -454,16 +473,24 @@ require("lazy").setup({
   },
 
   -- === DAP ===
+  -- The whole DAP stack loads lazily on the first breakpoint keymap. nvim-dap,
+  -- nvim-nio and nvim-dap-virtual-text are pulled in as dependencies of dap-ui.
   { "mfussenegger/nvim-dap",
+    lazy = true,
     config = function()
       require('plugins/dap')
     end
   },
-  { "nvim-neotest/nvim-nio" },
+  { "nvim-neotest/nvim-nio", lazy = true },
   { "rcarriga/nvim-dap-ui",
+    keys = {
+      { "<Leader>br", desc = "Toggle Breakpoint" },
+      { "<Leader>db", desc = "Close Dap UI" },
+    },
     dependencies = {
      "mfussenegger/nvim-dap",
      "nvim-neotest/nvim-nio",
+     "theHamsta/nvim-dap-virtual-text",
     },
     config = function()
       require('dapui').setup({})
@@ -489,14 +516,21 @@ require("lazy").setup({
     end,
   },
   { "theHamsta/nvim-dap-virtual-text",
+    lazy = true,
     config = function()
       require("nvim-dap-virtual-text").setup()
     end,
   },
 
   -- === UFO Folding ===
-  { "kevinhwang91/promise-async" },
-  { "kevinhwang91/nvim-ufo" },
+  {
+    "kevinhwang91/nvim-ufo",
+    dependencies = { "kevinhwang91/promise-async" },
+    event = "BufReadPost",
+    config = function()
+      require('plugins/nvim-ufo')
+    end,
+  },
 
 
   -- === text-case ===
@@ -522,7 +556,7 @@ require("lazy").setup({
     -- If you want to use the interactive feature of the `Subs` command right away, text-case.nvim
     -- has to be loaded on startup. Otherwise, the interactive feature of the `Subs` will only be
     -- available after the first executing of it or after a keymap of text-case.nvim has been used.
-    lazy = false,
+    lazy = true,
   }
 })
 
@@ -537,6 +571,19 @@ require('plugins/treesitter')
 -- ***************************************************************************
 -- Airline
 vim.g.airline_powerline_fonts = 1
+
+-- Only load the extensions we actually use. This stops airline from evaluating
+-- the rest (whitespace buffer-scan, branch, hunks, wordcount, ...) on every
+-- statusline refresh -- a real cost on large files and in slow-git repos.
+--   * dropped 'whitespace' : scans the whole buffer on edits/cursor moves
+--   * dropped 'branch'/'hunks': git-backed; this repo's `git` is slow
+--     (`git status` ~0.85s+), and we don't want the statusline touching git.
+vim.g.airline_extensions = { 'coc', 'tabline' }
+
+-- Explicit belt-and-suspenders disables (in case airline defaults change).
+vim.g['airline#extensions#whitespace#enabled'] = 0
+vim.g['airline#extensions#branch#enabled'] = 0
+vim.g['airline#extensions#hunks#enabled'] = 0
 
 vim.g['airline#extensions#tabline#enabled'] = 1
 vim.g['airline#extensions#tabline#left_sep'] = ' '
@@ -644,23 +691,24 @@ if is_gui then
 --   end
 end
 
--- color settings for diff
-vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
-vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
-vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
-vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+-- Theme switching: markdown -> light (github_light), everything else -> everforest.
+-- Guarded so the colorscheme is only reloaded when the target actually changes.
+-- Previously this ran `:colorscheme` on *every* FileType event, which is
+-- expensive (re-sources the whole theme) and wiped custom highlights.
+local function apply_theme_for_ft(ft)
+  local is_md = ft == "markdown"
+  local target = is_md and "github_light" or "everforest"
+  if vim.g.colors_name == target then
+    return
+  end
+  vim.o.background = is_md and "light" or "dark"
+  pcall(vim.cmd.colorscheme, target)
+end
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "*",
-  callback = function()
-
-    if vim.bo.filetype == "markdown" then
-      vim.cmd("set background=light")
-      vim.cmd("colorscheme github_light") -- Theme for markdown
-    else
-      vim.cmd("set background=dark")
-      vim.cmd("colorscheme everforest") -- Theme for everything else
-    end
+  callback = function(args)
+    apply_theme_for_ft(vim.bo[args.buf].filetype)
   end,
 })
 
@@ -719,11 +767,17 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- Remove trailing whitespace on save
+-- Remove trailing whitespace on save (skipped for big files; preserves cursor
+-- position and search history via keeppatterns + winsaveview/winrestview)
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*",
   callback = function()
-    vim.cmd([[%s/\s\+$//e]])
+    if vim.b.is_big_file then
+      return
+    end
+    local view = vim.fn.winsaveview()
+    vim.cmd([[keeppatterns %s/\s\+$//e]])
+    vim.fn.winrestview(view)
   end,
 })
 
@@ -751,13 +805,11 @@ vim.keymap.set("n", "<C-t>", ":enew<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "[", ":cnext<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "]", ":cprev<CR>", { noremap = true, silent = true })
 
--- Treesitter folding
-vim.opt.foldmethod = 'expr'
-vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
-vim.opt.foldlevel = 99
+-- Folding is fully managed by nvim-ufo (see lua/plugins/nvim-ufo.lua).
+-- The old `foldexpr = nvim_treesitter#foldexpr()` was a major slowdown on large
+-- files, so it has been removed in favor of UFO's lazy, on-demand fold provider.
 
--- nvim-ufo -- Source external Vimscript config (for backward compatibility)
-require('plugins/nvim-ufo')
+-- nvim-ufo is now loaded lazily via its plugin spec (event = "BufReadPost").
 require('plugins/remote_file_server')
 
 -- ingest log server: POST/GET http://127.0.0.1:<port>/ingest/<channel> -> log file
@@ -774,21 +826,38 @@ vim.keymap.set("n", "<leader>rc", ":tabnew ~/.config/nvim/init.lua<CR>", { silen
 
 -- ***************************************************************************
 -- Highlights
+-- Applied via a ColorScheme autocmd so they survive theme switches (markdown
+-- <-> code) instead of being wiped by the next :colorscheme. Also applied once
+-- immediately for the current theme.
 
-vim.api.nvim_set_hl(0, '@operator', { bold = true })
-vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
-vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
-vim.api.nvim_set_hl(0, '@keyword', { bold = true })
-vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
-if not is_gui then
-  vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
-  vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
-  vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
-else
-  vim.api.nvim_set_hl(0, 'Number', { bold = true })
+local function set_custom_highlights()
+  -- color settings for diff
+  vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
+  vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
+  vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
+  vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+
+  vim.api.nvim_set_hl(0, '@operator', { bold = true })
+  vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
+  vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
+  vim.api.nvim_set_hl(0, '@keyword', { bold = true })
+  vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
+  if not is_gui then
+    vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
+    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
+    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
+  else
+    vim.api.nvim_set_hl(0, 'Number', { bold = true })
+  end
+
+  -- typescript
+  vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
 end
 
--- typescript
-vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "*",
+  callback = set_custom_highlights,
+})
+set_custom_highlights()
 
 -- require("plugins/tsconfig-alias-path") ToDo yet to debug it; Not working yet

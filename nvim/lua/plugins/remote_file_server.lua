@@ -33,6 +33,8 @@ local function open_file(filepath, line, col)
   end)
 end
 
+local server_handle = nil
+
 function start()
   if server_started then
     vim.notify("[file_server] Server already running", vim.log.levels.INFO)
@@ -40,7 +42,18 @@ function start()
   end
 
   local server = uv.new_tcp()
-  server:bind("127.0.0.1", PORT)
+  local ok, bind_err = pcall(function()
+    assert(server:bind("127.0.0.1", PORT))
+  end)
+  if not ok then
+    vim.notify(
+      "[file_server] Could not bind port " .. PORT .. " (" .. tostring(bind_err) .. ")",
+      vim.log.levels.WARN
+    )
+    pcall(function() server:close() end)
+    return
+  end
+  server_handle = server
 
   server:listen(128, function(err)
     if err then
@@ -96,4 +109,18 @@ function start()
   vim.notify("[file_server] Running on http://localhost:" .. PORT)
 end
 
+local function stop()
+  if server_handle then
+    pcall(function() server_handle:close() end)
+    server_handle = nil
+  end
+  server_started = false
+  vim.notify("[file_server] Stopped", vim.log.levels.INFO)
+end
+
+vim.api.nvim_create_user_command("FileServerStart", start, {})
+vim.api.nvim_create_user_command("FileServerStop", stop, {})
+
+-- Auto-start on load (kept for the React "Open in Editor URL" workflow).
+-- Use :FileServerStop / :FileServerStart to control it manually.
 start()
