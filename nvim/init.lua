@@ -760,6 +760,11 @@ vim.opt.foldlevel = 99
 require('plugins/nvim-ufo')
 require('plugins/remote_file_server')
 
+-- ingest log server: POST/GET http://127.0.0.1:<port>/ingest/<channel> -> log file
+-- Useful for debugging Node apps & React components via fetch(). Not started
+-- automatically -- run :IngestStart when you want to capture logs. See :IngestOpen
+require('plugins/ingest_server').setup({ port = 9099 })
+
 -- Visual mode: yank to system clipboard
 vim.keymap.set("x", "<leader>y", '"+y', { silent = true })
 
