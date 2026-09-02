@@ -1,6 +1,7 @@
 -- Coc settings
 vim.g.coc_global_extensions = {
-  'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint', 'coc-graphql',
+  'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint',
+  -- 'coc-graphql',
   'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-floaterm', 'coc-java'
 }
 
