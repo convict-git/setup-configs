@@ -92,6 +92,11 @@ require("lazy").setup({
   { 'jiangmiao/auto-pairs', lazy = false },
   { 'preservim/tagbar', cmd = { "TagbarToggle", "TagbarOpen", "Tagbar" } },
   { 'NLKNguyen/papercolor-theme' },
+  {
+    'duarteocarmo/cursor-themes.nvim',
+    lazy = false,
+    priority = 1000,
+  },
   { 'voldikss/vim-floaterm',
     cmd = { "FloatermNew", "FloatermToggle" },
     keys = { "<S-t>", "<leader>tr" },
@@ -589,18 +594,6 @@ vim.g['airline#extensions#tabline#enabled'] = 1
 vim.g['airline#extensions#tabline#left_sep'] = ' '
 vim.g['airline#extensions#tabline#left_alt_sep'] = '|'
 
--- Customize section_z to include clock
-vim.api.nvim_create_autocmd("User", {
-  pattern = "AirlineAfterInit",
-  callback = function()
-    vim.g.airline_section_z = vim.fn['airline#section#create']({
-      'clock',
-      vim.g.airline_symbols and vim.g.airline_symbols.space or ' ',
-      vim.g.airline_section_z
-    })
-  end
-})
-
 -- ***************************************************************************
 -- Others
 --
@@ -696,12 +689,13 @@ end
 -- Previously this ran `:colorscheme` on *every* FileType event, which is
 -- expensive (re-sources the whole theme) and wiped custom highlights.
 local function apply_theme_for_ft(ft)
+  vim.o.background = is_md and "light" or "dark"
   local is_md = ft == "markdown"
   local target = is_md and "github_light" or "everforest"
+  vim.g.airline_theme = 'everforest'
   if vim.g.colors_name == target then
     return
   end
-  vim.o.background = is_md and "light" or "dark"
   pcall(vim.cmd.colorscheme, target)
 end
 

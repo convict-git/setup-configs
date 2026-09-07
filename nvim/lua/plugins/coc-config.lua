@@ -84,7 +84,7 @@ vim.keymap.set("n", "<leader>gci", "<Plug>(coc-git-chunkinfo)")
 vim.keymap.set("n", "<leader>kr", ":CocCommand git.chunkUndo<CR>")
 
 -- navigation
-vim.keymap.set("n", "gD", "<Plug>(coc-definition)", { silent = true })
+vim.keymap.set("n", "gd", "<Plug>(coc-definition)", { silent = true })
 vim.keymap.set("n", "gv", ":call CocActionAsync('jumpDefinition')<CR>:wincmd v<CR>", { silent = true })
 vim.keymap.set("n", "gy", "<Plug>(coc-type-definition)", { silent = true })
 vim.keymap.set("n", "gi", "<Plug>(coc-implementation)", { silent = true })
