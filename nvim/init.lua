@@ -92,11 +92,11 @@ require("lazy").setup({
   { 'jiangmiao/auto-pairs', lazy = false },
   { 'preservim/tagbar', cmd = { "TagbarToggle", "TagbarOpen", "Tagbar" } },
   { 'NLKNguyen/papercolor-theme' },
-  {
-    'duarteocarmo/cursor-themes.nvim',
-    lazy = false,
-    priority = 1000,
-  },
+  -- {
+  --   'duarteocarmo/cursor-themes.nvim',
+  --   lazy = false,
+  --   priority = 1000,
+  -- },
   { 'voldikss/vim-floaterm',
     cmd = { "FloatermNew", "FloatermToggle" },
     keys = { "<S-t>", "<leader>tr" },
