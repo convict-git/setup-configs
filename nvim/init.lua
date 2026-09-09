@@ -365,6 +365,9 @@ require("lazy").setup({
     dependencies = { "junegunn/fzf" },
     config = function()
       require('plugins/fzf-nvim')
+      -- FuzzyGitRange / FuzzyGitSince: fuzzy content search scoped to files in
+      -- given commit ranges + tracked/staged files. Depends on fzf.vim.
+      require('plugins/fuzzy-git-range')
     end,
   },
 
@@ -537,6 +540,9 @@ require("lazy").setup({
     end,
   },
 
+
+  -- === Sprinklr Supercharged (scanProject / references / traceImports) ===
+  require("plugins/spr-supercharged"),
 
   -- === text-case ===
   {
