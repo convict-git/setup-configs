@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 xcode-select --install
-brew install neovim node nvm cmake yazi ffmpeg sevenzip jq poppler fd ripgrep fzf zoxide resvg imagemagick font-symbols-only-nerd-font
+brew install neovim node nvm cmake yazi ffmpeg sevenzip jq poppler fd ripgrep fzf zoxide resvg imagemagick chafa font-symbols-only-nerd-font
 
 
 # install rust 
