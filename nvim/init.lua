@@ -414,6 +414,12 @@ require("lazy").setup({
         "<cmd>Yazi<cr>",
         desc = "Open yazi at the current file",
       },
+      {
+        "<C-up>",
+        mode = { "n", "v" },
+        "<cmd>Yazi toggle<cr>",
+        desc = "Resume the last yazi session",
+      },
     },
     -- 👇 if you use `open_for_directories=true`, this is recommended
     init = function()
