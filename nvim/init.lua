@@ -700,13 +700,65 @@ vim.keymap.set("n", "<leader>ad", function()
   print(path)
 end, { desc = "Copy absolute file path to clipboard" })
 
-vim.keymap.set("n", "<leader>rd", function()
+local function relative_buffer_path()
   local abs_path = vim.fn.expand("%:p")
-  local cwd = vim.fn.getcwd()
-  local rel_path = vim.fn.fnamemodify(abs_path, ":." )
+  return vim.fn.fnamemodify(abs_path, ":.")
+end
+
+local function copy_relative_path()
+  local rel_path = relative_buffer_path()
   vim.fn.setreg("+", rel_path)
   print(rel_path)
-end, { desc = "Copy file path relative to CWD to clipboard" })
+end
+
+local function character_column(line_number, byte_column)
+  local line = vim.api.nvim_buf_get_lines(0, line_number - 1, line_number, true)[1] or ""
+  local byte_index = math.min(math.max(byte_column - 1, 0), #line)
+  return vim.str_utfindex(line, byte_index) + 1
+end
+
+local function copy_relative_path_with_range()
+  local visual_mode = vim.fn.mode()
+  local anchor = vim.fn.getpos("v")
+  local cursor = vim.fn.getpos(".")
+
+  if anchor[2] > cursor[2] or (anchor[2] == cursor[2] and anchor[3] > cursor[3]) then
+    anchor, cursor = cursor, anchor
+  end
+
+  local start_line, end_line = anchor[2], cursor[2]
+  local start_column, end_column
+  if visual_mode == "V" then
+    local end_text = vim.api.nvim_buf_get_lines(0, end_line - 1, end_line, true)[1] or ""
+    start_column = 1
+    end_column = math.max(vim.str_utfindex(end_text), 1)
+  else
+    start_column = character_column(start_line, anchor[3])
+    end_column = character_column(end_line, cursor[3])
+  end
+  local reference = string.format(
+    "%s:%d:%d-%d:%d",
+    relative_buffer_path(),
+    start_line,
+    start_column,
+    end_line,
+    end_column
+  )
+
+  vim.fn.setreg("+", reference)
+  print(reference)
+end
+
+vim.keymap.set("n", "<leader>rd", copy_relative_path, {
+  desc = "Copy file path relative to CWD to clipboard",
+})
+vim.keymap.set("x", "<leader>rd", copy_relative_path_with_range, {
+  desc = "Copy relative file path and selected range to clipboard",
+})
+
+vim.keymap.set({ "n", "x" }, "<leader>gb", function()
+  require("snacks").gitbrowse({ what = "file" })
+end, { desc = "Open current file on the remote's current branch" })
 
 vim.keymap.set("n", "<F5>", function()
   local schemes = vim.fn.getcompletion("", "color")
