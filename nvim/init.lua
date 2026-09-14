@@ -42,8 +42,7 @@ vim.cmd("syntax enable")
 vim.cmd("match Todo /todo convict[^*/]*/") -- todo convict matches as Todo
 
 
--- Statusline
-vim.opt.statusline = "%<%f%h%m%r%=char=%b=0x%B\\ \\ %l,%c%V\\ %P"
+-- Statusline is managed by lualine (see lua/plugins/lualine-config.lua).
 -- vim.opt.completeopt:remove("preview") -- Completion options
 vim.opt.completeopt:append("popup")  -- enable if using popup menu
 vim.opt.compatible = false -- Not compatible with old vi
@@ -85,8 +84,23 @@ require("lazy").setup({
   { 'rhysd/vim-clang-format' },
   -- Removed 'octol/vim-cpp-enhanced-highlight': redundant regex C/C++ highlighting,
   -- superseded by the treesitter `cpp` parser (and slow on large C/C++ files).
-  { 'vim-airline/vim-airline' },
-  { 'vim-airline/vim-airline-themes' },
+  {
+    'nvim-lualine/lualine.nvim',
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('plugins/lualine-config')
+    end,
+  },
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('plugins/bufferline-config')
+    end,
+  },
   -- Removed 'ap/vim-css-color': duplicate of 'brenoprata10/nvim-highlight-colors'
   -- below (two plugins highlighting the same color codes).
   { 'jiangmiao/auto-pairs', lazy = false },
@@ -114,6 +128,14 @@ require("lazy").setup({
  { 'nordtheme/vim' },
  {'sainnhe/gruvbox-material' },
  { 'sainnhe/everforest' },
+ {
+   "EdenEast/nightfox.nvim",
+   lazy = false,
+   priority = 1000, -- load (and apply the colorscheme) before lualine/bufferline read colors
+   config = function()
+     vim.cmd.colorscheme("duskfox")
+   end,
+ },
  {
    "oxfist/night-owl.nvim",
    lazy = false, -- make sure we load this during startup if it is your main colorscheme
@@ -154,21 +176,6 @@ require("lazy").setup({
    end
  },
 
-
- -- === Tabline ===
- {
-   'romgrk/barbar.nvim',
-   cond = false,
-   config = function()
-     require('barbar').setup({
-       insert_at_end = true,
-       animation = false,
-     })
-   end,
-   dependencies = {
-      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
-   },
- },
 
  -- === Test coverage ===
  {
@@ -480,6 +487,15 @@ require("lazy").setup({
      end
   },
 
+  -- === Outline (symbols sidebar) ===
+  { "hedyhli/outline.nvim",
+    lazy = false,
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require('plugins/outline-config')
+    end,
+  },
+
   -- === DAP ===
   -- The whole DAP stack loads lazily on the first breakpoint keymap. nvim-dap,
   -- nvim-nio and nvim-dap-virtual-text are pulled in as dependencies of dap-ui.
@@ -580,27 +596,6 @@ require('plugins/telescope-config')
 require('plugins/treesitter')
 
 -- ***************************************************************************
--- Airline
-vim.g.airline_powerline_fonts = 1
-
--- Only load the extensions we actually use. This stops airline from evaluating
--- the rest (whitespace buffer-scan, branch, hunks, wordcount, ...) on every
--- statusline refresh -- a real cost on large files and in slow-git repos.
---   * dropped 'whitespace' : scans the whole buffer on edits/cursor moves
---   * dropped 'branch'/'hunks': git-backed; this repo's `git` is slow
---     (`git status` ~0.85s+), and we don't want the statusline touching git.
-vim.g.airline_extensions = { 'coc', 'tabline' }
-
--- Explicit belt-and-suspenders disables (in case airline defaults change).
-vim.g['airline#extensions#whitespace#enabled'] = 0
-vim.g['airline#extensions#branch#enabled'] = 0
-vim.g['airline#extensions#hunks#enabled'] = 0
-
-vim.g['airline#extensions#tabline#enabled'] = 1
-vim.g['airline#extensions#tabline#left_sep'] = ' '
-vim.g['airline#extensions#tabline#left_alt_sep'] = '|'
-
--- ***************************************************************************
 -- Others
 --
 -- Send all files recursively to quickfix list
@@ -671,8 +666,6 @@ if is_gui then
   vim.keymap.set("v", "<D-c>", '"+y', { noremap = true, silent = true })
   vim.keymap.set("n", "<D-v>", '"+p', { noremap = true, silent = true })
   vim.keymap.set("i", "<D-v>", '<C-r>+', { noremap = true, silent = true })
-
-  vim.cmd("colorscheme github_dark_dimmed")
 -- else
 --   vim.cmd("set background=dark")
 --   -- vim.g.airline_theme = 'tomorrow'
@@ -690,27 +683,10 @@ if is_gui then
 --   end
 end
 
--- Theme switching: markdown -> light (github_light), everything else -> everforest.
--- Guarded so the colorscheme is only reloaded when the target actually changes.
--- Previously this ran `:colorscheme` on *every* FileType event, which is
--- expensive (re-sources the whole theme) and wiped custom highlights.
-local function apply_theme_for_ft(ft)
-  vim.o.background = is_md and "light" or "dark"
-  local is_md = ft == "markdown"
-  local target = is_md and "github_light" or "everforest"
-  vim.g.airline_theme = 'everforest'
-  if vim.g.colors_name == target then
-    return
-  end
-  pcall(vim.cmd.colorscheme, target)
-end
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
-  callback = function(args)
-    apply_theme_for_ft(vim.bo[args.buf].filetype)
-  end,
-})
+-- Colorscheme is applied from the nightfox.nvim plugin spec above (priority
+-- 1000, lazy = false) so it's active before lualine/bufferline configure
+-- themselves against it -- applying it here (after lazy.setup()) left
+-- bufferline reading the wrong colors until a manual :colorscheme rerun.
 
 vim.api.nvim_create_user_command("W", function()
   if vim.bo.modified then
@@ -832,26 +808,34 @@ vim.keymap.set("n", "<leader>rc", ":tabnew ~/.config/nvim/init.lua<CR>", { silen
 
 local function set_custom_highlights()
   -- color settings for diff
-  vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
-  vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
-  vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
-  vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+  -- vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
+  -- vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
+  -- vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
+  -- vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
 
   vim.api.nvim_set_hl(0, '@operator', { bold = true })
   vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
   vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
   vim.api.nvim_set_hl(0, '@keyword', { bold = true })
   vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
-  if not is_gui then
-    vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
-    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
-    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
-  else
-    vim.api.nvim_set_hl(0, 'Number', { bold = true })
-  end
+  vim.api.nvim_set_hl(0, 'Number', { bold = true })
 
   -- typescript
   vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
+
+  -- Diagnostics: straight underline instead of the colorscheme's default
+  -- squiggly undercurl, keeping whatever color the theme assigned.
+  for _, severity in ipairs({ 'Error', 'Warn', 'Info', 'Hint' }) do
+    local group = 'DiagnosticUnderline' .. severity
+    local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
+    hl.undercurl = false
+    hl.underline = true
+    if hl.cterm then
+      hl.cterm.undercurl = false
+      hl.cterm.underline = true
+    end
+    vim.api.nvim_set_hl(0, group, hl)
+  end
 end
 
 vim.api.nvim_create_autocmd("ColorScheme", {

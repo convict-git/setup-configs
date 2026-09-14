@@ -9,30 +9,28 @@ vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.signcolumn = 'yes'
 
--- Refresh airline on CoC status/diagnostic changes, but DEBOUNCED. A large file
--- can emit a burst of diagnostic updates (eslint/tsserver/jdtls), and each raw
--- AirlineRefresh recomputes the whole statusline. Coalesce them into at most one
+-- Refresh lualine on CoC status/diagnostic changes, but DEBOUNCED. A large file
+-- can emit a burst of diagnostic updates (eslint/tsserver/jdtls), and each
+-- refresh recomputes the whole statusline. Coalesce them into at most one
 -- refresh per window, and skip entirely on big files.
-local airline_refresh_pending = false
-local function schedule_airline_refresh()
-  if airline_refresh_pending or vim.b.is_big_file then
+local lualine_refresh_pending = false
+local function schedule_lualine_refresh()
+  if lualine_refresh_pending or vim.b.is_big_file then
     return
   end
-  airline_refresh_pending = true
+  lualine_refresh_pending = true
   vim.defer_fn(function()
-    airline_refresh_pending = false
-    if vim.fn.exists(":AirlineRefresh") == 2 then
-      pcall(function() vim.cmd("AirlineRefresh") end)
-    end
+    lualine_refresh_pending = false
+    pcall(function() require('lualine').refresh() end)
   end, 500)
 end
 
-vim.api.nvim_create_augroup("AirlineCoc", { clear = true })
+vim.api.nvim_create_augroup("LualineCoc", { clear = true })
 
 vim.api.nvim_create_autocmd("User", {
-  group = "AirlineCoc",
+  group = "LualineCoc",
   pattern = { "CocStatusChange", "CocDiagnosticChange" },
-  callback = schedule_airline_refresh,
+  callback = schedule_lualine_refresh,
 })
 
 -- -- tab completion -- ToDo NOT yet able to migrate to LUA due to bugs
