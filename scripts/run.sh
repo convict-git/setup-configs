@@ -11,9 +11,8 @@ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 # telescope-fzf-native
 # 
 
-# yazi yamb
-git clone https://github.com/h-hg/yamb.yazi.git ~/.config/yazi/plugins/yamb.yazi
-ya pack -a h-hg/yamb
+# yazi plugins/flavor (all declared in yazi/package.toml)
+ya pkg install
 
 # oh-my-zsh plugins
 cd ~/.oh-my-zsh/custom/plugins
