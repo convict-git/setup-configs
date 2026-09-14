@@ -721,25 +721,31 @@ end
 
 vim.keymap.set("n", "<leader>bd", kill_all_buffers, { desc = "Kill all buffers" })
 
--- Restore cursor to last position on buffer read
+-- Restore cursor to last position on buffer read.
+--
+-- Must run synchronously (not via vim.schedule/defer_fn): coc.nvim, Telescope,
+-- and fzf all open the target buffer and then immediately set the cursor to
+-- the jump destination in the same tick. Deferring this callback let it run
+-- *after* that jump, so it clobbered the correct position with the stale '"
+-- mark -- landing on the wrong line the first time a buffer was read (it
+-- "worked" on a subsequent jump only because some plugins reuse an
+-- already-loaded buffer via :buffer, which doesn't re-fire BufReadPost).
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
-    vim.schedule(function()
-      local mark = vim.api.nvim_buf_get_mark(0, '"')
-      local lcount = vim.api.nvim_buf_line_count(0)
-      local line = mark[1]
-      local col = mark[2]
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    local line = mark[1]
+    local col = mark[2]
 
-      if line > 0 and line <= lcount then
-        pcall(function()
-          local line_length = #vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]
-          if col > line_length then
-            col = line_length
-          end
-          vim.api.nvim_win_set_cursor(0, {line, col})
-        end)
-      end
-    end)
+    if line > 0 and line <= lcount then
+      pcall(function()
+        local line_length = #vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]
+        if col > line_length then
+          col = line_length
+        end
+        vim.api.nvim_win_set_cursor(0, {line, col})
+      end)
+    end
   end,
 })
 
