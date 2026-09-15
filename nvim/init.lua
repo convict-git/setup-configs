@@ -39,7 +39,7 @@ vim.opt.mousemoveevent = true
 vim.opt.previewheight = 25 -- Preview window height
 vim.opt.background = "light"
 vim.cmd("syntax enable")
-vim.cmd("match Todo /todo convict[^*/]*/") -- todo convict matches as Todo
+-- vim.cmd("match Todo /todo convict[^*/]*/") -- todo convict matches as Todo
 
 
 -- Statusline is managed by lualine (see lua/plugins/lualine-config.lua).
@@ -907,5 +907,19 @@ vim.api.nvim_create_autocmd("ColorScheme", {
   callback = set_custom_highlights,
 })
 set_custom_highlights()
+
+-- ***************************************************************************
+-- Line highlights: tint the whole line when it contains one of these texts.
+-- Skipped for big files (bigfile.lua) and non-file buffers. Diff* groups keep
+-- the tint readable across colorscheme switches. See lua/plugins/line-highlight.lua
+require('plugins/line-highlight').setup({
+  -- Only these file extensions (case-insensitive); leave out for all files.
+  extensions = { 'lua', 'js', 'jsx', 'ts', 'tsx', 'java', 'md' },
+  rules = {
+    { text = 'todo convict', hl = 'DiffText' },
+    { text = 'FIXME', hl = 'DiffDelete' },
+    { text = 'todo CLAUDE', hl = 'DiffDelete' },
+  },
+})
 
 -- require("plugins/tsconfig-alias-path") ToDo yet to debug it; Not working yet
