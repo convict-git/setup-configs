@@ -121,6 +121,5 @@ end
 vim.api.nvim_create_user_command("FileServerStart", start, {})
 vim.api.nvim_create_user_command("FileServerStop", stop, {})
 
--- Auto-start on load (kept for the React "Open in Editor URL" workflow).
--- Use :FileServerStop / :FileServerStart to control it manually.
-start()
+-- Not started automatically -- run :FileServerStart when you need the React
+-- "Open in Editor URL" workflow. Use :FileServerStop to stop it.
