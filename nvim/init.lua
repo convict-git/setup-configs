@@ -133,7 +133,7 @@ require("lazy").setup({
    lazy = false,
    priority = 1000, -- load (and apply the colorscheme) before lualine/bufferline read colors
    config = function()
-     vim.cmd.colorscheme("duskfox")
+     vim.cmd.colorscheme("nordfox")
    end,
  },
  {
