@@ -745,7 +745,10 @@ local function character_column(line_number, byte_column)
   return vim.str_utfindex(line, byte_index) + 1
 end
 
-local function copy_relative_path_with_range()
+--- Returns "path:startline:startcol-endline:endcol" for the active visual
+--- selection, plus the (already ordered) start line, so callers can both
+--- format a reference and know where the selection begins.
+local function selection_range_reference()
   local visual_mode = vim.fn.mode()
   local anchor = vim.fn.getpos("v")
   local cursor = vim.fn.getpos(".")
@@ -773,6 +776,11 @@ local function copy_relative_path_with_range()
     end_column
   )
 
+  return reference, start_line
+end
+
+local function copy_relative_path_with_range()
+  local reference = selection_range_reference()
   vim.fn.setreg("+", reference)
   print(reference)
 end
@@ -782,6 +790,33 @@ vim.keymap.set("n", "<leader>rd", copy_relative_path, {
 })
 vim.keymap.set("x", "<leader>rd", copy_relative_path_with_range, {
   desc = "Copy relative file path and selected range to clipboard",
+})
+
+--- Inserts a `// [todo CLAUDE: <path>[:range] ]` line above the current line
+--- (normal mode) or above the line where the selection started (visual
+--- mode), reusing <leader>rd's path/range formatting, and leaves the cursor
+--- positioned inside the brackets ready to type the actual note.
+local function insert_todo_claude_comment()
+  local mode = vim.fn.mode()
+  local is_visual = mode == "v" or mode == "V" or mode == "\22"
+  local reference, start_line
+
+  if is_visual then
+    reference, start_line = selection_range_reference()
+    vim.cmd("normal! \27")
+  else
+    reference = relative_buffer_path()
+    start_line = vim.fn.line(".")
+  end
+
+  local before_cursor = "// [todo CLAUDE: " .. reference .. " "
+  vim.api.nvim_buf_set_lines(0, start_line - 1, start_line - 1, false, { before_cursor .. "] " })
+  vim.api.nvim_win_set_cursor(0, { start_line, #before_cursor })
+  vim.cmd("startinsert")
+end
+
+vim.keymap.set({ "n", "x" }, "<leader>tc", insert_todo_claude_comment, {
+  desc = "Insert a todo CLAUDE comment above with file path/range",
 })
 
 vim.keymap.set({ "n", "x" }, "<leader>gb", function()
