@@ -22,7 +22,7 @@ end
 
 telescope.setup{
   defaults = {
-    path_display = { "truncate", "absolute" },
+    path_display = require('plugins/telescope-path').display,
     vimgrep_timeout = 10000,
     mappings = {
       n = {
@@ -38,6 +38,23 @@ telescope.setup{
       },
     },
   },
+  -- Pickers that render the path in a fixed-width column default to 30 chars,
+  -- which is too narrow for a relative path; widen it so path_display (see
+  -- plugins/telescope-path) has room to elide on the left instead of the
+  -- column clipping the filename off the right.
+  pickers = (function()
+    local wide = { fname_width = 54 }
+    local p = {}
+    for _, name in ipairs({
+      'quickfix', 'loclist', 'diagnostics',
+      'lsp_references', 'lsp_definitions', 'lsp_implementations', 'lsp_type_definitions',
+      'lsp_incoming_calls', 'lsp_outgoing_calls',
+      'lsp_document_symbols', 'lsp_workspace_symbols', 'lsp_dynamic_workspace_symbols',
+    }) do
+      p[name] = wide
+    end
+    return p
+  end)(),
   -- Uncomment and customize pickers here if needed
   -- pickers = {
   --   git_commits = {

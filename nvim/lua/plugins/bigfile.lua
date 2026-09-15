@@ -32,11 +32,6 @@ local function apply_big(bufnr)
   -- Prevent CoC from ever attaching to this buffer.
   vim.b[bufnr].coc_enabled = 0
 
-  -- Belt-and-suspenders for airline: even if the whitespace extension is ever
-  -- re-enabled globally, run no whitespace checks on this buffer. (The debounced
-  -- airline refresh in coc-config.lua also skips buffers flagged here.)
-  vim.b[bufnr].airline_whitespace_checks = {}
-
   -- These are window/buffer local; the buffer being read is current for the
   -- BufReadPre/BufReadPost events, so opt_local targets the right place.
   vim.opt_local.foldmethod = "manual"

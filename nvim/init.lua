@@ -39,11 +39,10 @@ vim.opt.mousemoveevent = true
 vim.opt.previewheight = 25 -- Preview window height
 vim.opt.background = "light"
 vim.cmd("syntax enable")
-vim.cmd("match Todo /todo convict[^*/]*/") -- todo convict matches as Todo
+-- vim.cmd("match Todo /todo convict[^*/]*/") -- todo convict matches as Todo
 
 
--- Statusline
-vim.opt.statusline = "%<%f%h%m%r%=char=%b=0x%B\\ \\ %l,%c%V\\ %P"
+-- Statusline is managed by lualine (see lua/plugins/lualine-config.lua).
 -- vim.opt.completeopt:remove("preview") -- Completion options
 vim.opt.completeopt:append("popup")  -- enable if using popup menu
 vim.opt.compatible = false -- Not compatible with old vi
@@ -85,8 +84,23 @@ require("lazy").setup({
   { 'rhysd/vim-clang-format' },
   -- Removed 'octol/vim-cpp-enhanced-highlight': redundant regex C/C++ highlighting,
   -- superseded by the treesitter `cpp` parser (and slow on large C/C++ files).
-  { 'vim-airline/vim-airline' },
-  { 'vim-airline/vim-airline-themes' },
+  {
+    'nvim-lualine/lualine.nvim',
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('plugins/lualine-config')
+    end,
+  },
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('plugins/bufferline-config')
+    end,
+  },
   -- Removed 'ap/vim-css-color': duplicate of 'brenoprata10/nvim-highlight-colors'
   -- below (two plugins highlighting the same color codes).
   { 'jiangmiao/auto-pairs', lazy = false },
@@ -114,6 +128,14 @@ require("lazy").setup({
  { 'nordtheme/vim' },
  {'sainnhe/gruvbox-material' },
  { 'sainnhe/everforest' },
+ {
+   "EdenEast/nightfox.nvim",
+   lazy = false,
+   priority = 1000, -- load (and apply the colorscheme) before lualine/bufferline read colors
+   config = function()
+     vim.cmd.colorscheme("nordfox")
+   end,
+ },
  {
    "oxfist/night-owl.nvim",
    lazy = false, -- make sure we load this during startup if it is your main colorscheme
@@ -154,21 +176,6 @@ require("lazy").setup({
    end
  },
 
-
- -- === Tabline ===
- {
-   'romgrk/barbar.nvim',
-   cond = false,
-   config = function()
-     require('barbar').setup({
-       insert_at_end = true,
-       animation = false,
-     })
-   end,
-   dependencies = {
-      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
-   },
- },
 
  -- === Test coverage ===
  {
@@ -407,6 +414,12 @@ require("lazy").setup({
         "<cmd>Yazi<cr>",
         desc = "Open yazi at the current file",
       },
+      {
+        "<C-up>",
+        mode = { "n", "v" },
+        "<cmd>Yazi toggle<cr>",
+        desc = "Resume the last yazi session",
+      },
     },
     -- 👇 if you use `open_for_directories=true`, this is recommended
     init = function()
@@ -445,6 +458,28 @@ require("lazy").setup({
               end, 10)
             end, { buffer = yazi_buffer, desc = "Recursively add files from hovered dir to quickfix" })
           end,
+        -- Sent by yazi's `s` / `S` keymaps; bound in yazi rather than as terminal maps so typing in prompts isn't hijacked
+        forwarded_dds_events = { "nvim-find-files", "nvim-live-grep" },
+      })
+
+      local telescope_pickers = { ["nvim-find-files"] = "find_files", ["nvim-live-grep"] = "live_grep" }
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "YaziDDSCustom",
+        callback = function(event)
+          local picker = telescope_pickers[event.data.type]
+          if not picker then return end
+          local cwd = vim.json.decode(event.data.raw_data)
+
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "yazi" then
+              vim.api.nvim_win_close(win, true)
+            end
+          end
+
+          vim.defer_fn(function()
+            require("telescope.builtin")[picker]({ cwd = cwd })
+          end, 10)
+        end,
       })
     end,
   },
@@ -478,6 +513,15 @@ require("lazy").setup({
        vim.keymap.set('n', '[;', dropbar_api.goto_context_start, { desc = 'Go to start of current context' })
        vim.keymap.set('n', '];', dropbar_api.select_next_context, { desc = 'Select next context' })
      end
+  },
+
+  -- === Outline (symbols sidebar) ===
+  { "hedyhli/outline.nvim",
+    lazy = false,
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require('plugins/outline-config')
+    end,
   },
 
   -- === DAP ===
@@ -580,27 +624,6 @@ require('plugins/telescope-config')
 require('plugins/treesitter')
 
 -- ***************************************************************************
--- Airline
-vim.g.airline_powerline_fonts = 1
-
--- Only load the extensions we actually use. This stops airline from evaluating
--- the rest (whitespace buffer-scan, branch, hunks, wordcount, ...) on every
--- statusline refresh -- a real cost on large files and in slow-git repos.
---   * dropped 'whitespace' : scans the whole buffer on edits/cursor moves
---   * dropped 'branch'/'hunks': git-backed; this repo's `git` is slow
---     (`git status` ~0.85s+), and we don't want the statusline touching git.
-vim.g.airline_extensions = { 'coc', 'tabline' }
-
--- Explicit belt-and-suspenders disables (in case airline defaults change).
-vim.g['airline#extensions#whitespace#enabled'] = 0
-vim.g['airline#extensions#branch#enabled'] = 0
-vim.g['airline#extensions#hunks#enabled'] = 0
-
-vim.g['airline#extensions#tabline#enabled'] = 1
-vim.g['airline#extensions#tabline#left_sep'] = ' '
-vim.g['airline#extensions#tabline#left_alt_sep'] = '|'
-
--- ***************************************************************************
 -- Others
 --
 -- Send all files recursively to quickfix list
@@ -671,8 +694,6 @@ if is_gui then
   vim.keymap.set("v", "<D-c>", '"+y', { noremap = true, silent = true })
   vim.keymap.set("n", "<D-v>", '"+p', { noremap = true, silent = true })
   vim.keymap.set("i", "<D-v>", '<C-r>+', { noremap = true, silent = true })
-
-  vim.cmd("colorscheme github_dark_dimmed")
 -- else
 --   vim.cmd("set background=dark")
 --   -- vim.g.airline_theme = 'tomorrow'
@@ -690,27 +711,10 @@ if is_gui then
 --   end
 end
 
--- Theme switching: markdown -> light (github_light), everything else -> everforest.
--- Guarded so the colorscheme is only reloaded when the target actually changes.
--- Previously this ran `:colorscheme` on *every* FileType event, which is
--- expensive (re-sources the whole theme) and wiped custom highlights.
-local function apply_theme_for_ft(ft)
-  vim.o.background = is_md and "light" or "dark"
-  local is_md = ft == "markdown"
-  local target = is_md and "github_light" or "everforest"
-  vim.g.airline_theme = 'everforest'
-  if vim.g.colors_name == target then
-    return
-  end
-  pcall(vim.cmd.colorscheme, target)
-end
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
-  callback = function(args)
-    apply_theme_for_ft(vim.bo[args.buf].filetype)
-  end,
-})
+-- Colorscheme is applied from the nightfox.nvim plugin spec above (priority
+-- 1000, lazy = false) so it's active before lualine/bufferline configure
+-- themselves against it -- applying it here (after lazy.setup()) left
+-- bufferline reading the wrong colors until a manual :colorscheme rerun.
 
 vim.api.nvim_create_user_command("W", function()
   if vim.bo.modified then
@@ -724,13 +728,65 @@ vim.keymap.set("n", "<leader>ad", function()
   print(path)
 end, { desc = "Copy absolute file path to clipboard" })
 
-vim.keymap.set("n", "<leader>rd", function()
+local function relative_buffer_path()
   local abs_path = vim.fn.expand("%:p")
-  local cwd = vim.fn.getcwd()
-  local rel_path = vim.fn.fnamemodify(abs_path, ":." )
+  return vim.fn.fnamemodify(abs_path, ":.")
+end
+
+local function copy_relative_path()
+  local rel_path = relative_buffer_path()
   vim.fn.setreg("+", rel_path)
   print(rel_path)
-end, { desc = "Copy file path relative to CWD to clipboard" })
+end
+
+local function character_column(line_number, byte_column)
+  local line = vim.api.nvim_buf_get_lines(0, line_number - 1, line_number, true)[1] or ""
+  local byte_index = math.min(math.max(byte_column - 1, 0), #line)
+  return vim.str_utfindex(line, byte_index) + 1
+end
+
+local function copy_relative_path_with_range()
+  local visual_mode = vim.fn.mode()
+  local anchor = vim.fn.getpos("v")
+  local cursor = vim.fn.getpos(".")
+
+  if anchor[2] > cursor[2] or (anchor[2] == cursor[2] and anchor[3] > cursor[3]) then
+    anchor, cursor = cursor, anchor
+  end
+
+  local start_line, end_line = anchor[2], cursor[2]
+  local start_column, end_column
+  if visual_mode == "V" then
+    local end_text = vim.api.nvim_buf_get_lines(0, end_line - 1, end_line, true)[1] or ""
+    start_column = 1
+    end_column = math.max(vim.str_utfindex(end_text), 1)
+  else
+    start_column = character_column(start_line, anchor[3])
+    end_column = character_column(end_line, cursor[3])
+  end
+  local reference = string.format(
+    "%s:%d:%d-%d:%d",
+    relative_buffer_path(),
+    start_line,
+    start_column,
+    end_line,
+    end_column
+  )
+
+  vim.fn.setreg("+", reference)
+  print(reference)
+end
+
+vim.keymap.set("n", "<leader>rd", copy_relative_path, {
+  desc = "Copy file path relative to CWD to clipboard",
+})
+vim.keymap.set("x", "<leader>rd", copy_relative_path_with_range, {
+  desc = "Copy relative file path and selected range to clipboard",
+})
+
+vim.keymap.set({ "n", "x" }, "<leader>gb", function()
+  require("snacks").gitbrowse({ what = "file" })
+end, { desc = "Open current file on the remote's current branch" })
 
 vim.keymap.set("n", "<F5>", function()
   local schemes = vim.fn.getcompletion("", "color")
@@ -739,31 +795,49 @@ vim.keymap.set("n", "<F5>", function()
   print("Colorscheme: " .. next)
 end, { desc = "Random Colorscheme" })
 
+-- Deletes buffers directly by id instead of `:bufdo bd`: bufdo cycles the
+-- current buffer through every listed buffer via window switches, which
+-- errors (E1513: Cannot switch buffer. 'winfixbuf' is enabled) the moment a
+-- winfixbuf-locked sidebar window is in the layout -- outline.nvim's window
+-- is exactly that. Deleting by id never asks any window to switch buffers,
+-- so it doesn't touch that window at all. pcall keeps one buffer with
+-- unsaved changes from aborting the rest, same as plain `:bd` would refuse
+-- it but unlike `:bufdo bd`, which halts the whole loop on that buffer.
 local function kill_all_buffers()
-  vim.cmd("bufdo bd")
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[bufnr].buflisted and vim.bo[bufnr].buftype == '' then
+      pcall(vim.api.nvim_buf_delete, bufnr, { force = false })
+    end
+  end
 end
 
 vim.keymap.set("n", "<leader>bd", kill_all_buffers, { desc = "Kill all buffers" })
 
--- Restore cursor to last position on buffer read
+-- Restore cursor to last position on buffer read.
+--
+-- Must run synchronously (not via vim.schedule/defer_fn): coc.nvim, Telescope,
+-- and fzf all open the target buffer and then immediately set the cursor to
+-- the jump destination in the same tick. Deferring this callback let it run
+-- *after* that jump, so it clobbered the correct position with the stale '"
+-- mark -- landing on the wrong line the first time a buffer was read (it
+-- "worked" on a subsequent jump only because some plugins reuse an
+-- already-loaded buffer via :buffer, which doesn't re-fire BufReadPost).
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
-    vim.schedule(function()
-      local mark = vim.api.nvim_buf_get_mark(0, '"')
-      local lcount = vim.api.nvim_buf_line_count(0)
-      local line = mark[1]
-      local col = mark[2]
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    local line = mark[1]
+    local col = mark[2]
 
-      if line > 0 and line <= lcount then
-        pcall(function()
-          local line_length = #vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]
-          if col > line_length then
-            col = line_length
-          end
-          vim.api.nvim_win_set_cursor(0, {line, col})
-        end)
-      end
-    end)
+    if line > 0 and line <= lcount then
+      pcall(function()
+        local line_length = #vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]
+        if col > line_length then
+          col = line_length
+        end
+        vim.api.nvim_win_set_cursor(0, {line, col})
+      end)
+    end
   end,
 })
 
@@ -832,26 +906,34 @@ vim.keymap.set("n", "<leader>rc", ":tabnew ~/.config/nvim/init.lua<CR>", { silen
 
 local function set_custom_highlights()
   -- color settings for diff
-  vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
-  vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
-  vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
-  vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
+  -- vim.api.nvim_set_hl(0, 'DiffAdd',    { bg = '#c1e1c1' })
+  -- vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#a5d8ff' })
+  -- vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
+  -- vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
 
   vim.api.nvim_set_hl(0, '@operator', { bold = true })
   vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
   vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
   vim.api.nvim_set_hl(0, '@keyword', { bold = true })
   vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
-  if not is_gui then
-    vim.api.nvim_set_hl(0, 'Number', { bold = true, bg = '#e9f7ef' })
-    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineError', { bold = true, bg = '#fdedec' })
-    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineWarn', { bold = true, bg = '#fef9e7' })
-  else
-    vim.api.nvim_set_hl(0, 'Number', { bold = true })
-  end
+  vim.api.nvim_set_hl(0, 'Number', { bold = true })
 
   -- typescript
   vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
+
+  -- Diagnostics: straight underline instead of the colorscheme's default
+  -- squiggly undercurl, keeping whatever color the theme assigned.
+  for _, severity in ipairs({ 'Error', 'Warn', 'Info', 'Hint' }) do
+    local group = 'DiagnosticUnderline' .. severity
+    local hl = vim.api.nvim_get_hl(0, { name = group, link = false })
+    hl.undercurl = false
+    hl.underline = true
+    if hl.cterm then
+      hl.cterm.undercurl = false
+      hl.cterm.underline = true
+    end
+    vim.api.nvim_set_hl(0, group, hl)
+  end
 end
 
 vim.api.nvim_create_autocmd("ColorScheme", {
@@ -859,5 +941,19 @@ vim.api.nvim_create_autocmd("ColorScheme", {
   callback = set_custom_highlights,
 })
 set_custom_highlights()
+
+-- ***************************************************************************
+-- Line highlights: tint the whole line when it contains one of these texts.
+-- Skipped for big files (bigfile.lua) and non-file buffers. Diff* groups keep
+-- the tint readable across colorscheme switches. See lua/plugins/line-highlight.lua
+require('plugins/line-highlight').setup({
+  -- Only these file extensions (case-insensitive); leave out for all files.
+  extensions = { 'lua', 'js', 'jsx', 'ts', 'tsx', 'java', 'md' },
+  rules = {
+    { text = 'todo convict', hl = 'DiffText' },
+    { text = 'FIXME', hl = 'DiffDelete' },
+    { text = 'todo CLAUDE', hl = 'DiffDelete' },
+  },
+})
 
 -- require("plugins/tsconfig-alias-path") ToDo yet to debug it; Not working yet
