@@ -88,6 +88,17 @@ vim.keymap.set("n", "gy", "<Plug>(coc-type-definition)", { silent = true })
 vim.keymap.set("n", "gi", "<Plug>(coc-implementation)", { silent = true })
 vim.keymap.set("n", "gr", "<Plug>(coc-references)", { silent = true })
 
+-- show multi-result locations (references, implementations, ...) in Telescope instead of CocList
+vim.g.coc_enable_locationlist = 0
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "CocLocationsChange",
+  callback = function()
+    -- path_display comes from the shared default in plugins/telescope-path
+    require("telescope").extensions.coc.locations({ fname_width = 54 })
+  end,
+})
+
 
 -- highlight symbol under cursor (skip big files / buffers where CoC is off)
 vim.api.nvim_create_autocmd("CursorHold", {
