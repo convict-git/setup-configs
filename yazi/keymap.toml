@@ -32,6 +32,17 @@ desc = "Rename bookmark by key"
 on  = "C"
 run = [ 'shell -- ~/convict/open-source/setup-configs/scripts/combined_files_contents.sh "$@"' ]
 
+# Inside yazi.nvim, hand off to Telescope rooted at yazi's cwd; standalone keeps the default search
+[[mgr.prepend_keymap]]
+on   = "s"
+run  = 'shell -- if [ -n "$NVIM_CWD" ]; then ya pub-to 0 nvim-find-files --str "$PWD"; else ya emit search --via=fd; fi'
+desc = "Find files (Telescope in yazi.nvim, fd otherwise)"
+
+[[mgr.prepend_keymap]]
+on   = "S"
+run  = 'shell -- if [ -n "$NVIM_CWD" ]; then ya pub-to 0 nvim-live-grep --str "$PWD"; else ya emit search --via=rg; fi'
+desc = "Grep file contents (Telescope in yazi.nvim, rg otherwise)"
+
 [[mgr.prepend_keymap]]
 on   = "l"
 run  = "plugin smart-enter"

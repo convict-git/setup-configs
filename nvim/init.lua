@@ -458,6 +458,28 @@ require("lazy").setup({
               end, 10)
             end, { buffer = yazi_buffer, desc = "Recursively add files from hovered dir to quickfix" })
           end,
+        -- Sent by yazi's `s` / `S` keymaps; bound in yazi rather than as terminal maps so typing in prompts isn't hijacked
+        forwarded_dds_events = { "nvim-find-files", "nvim-live-grep" },
+      })
+
+      local telescope_pickers = { ["nvim-find-files"] = "find_files", ["nvim-live-grep"] = "live_grep" }
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "YaziDDSCustom",
+        callback = function(event)
+          local picker = telescope_pickers[event.data.type]
+          if not picker then return end
+          local cwd = vim.json.decode(event.data.raw_data)
+
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "yazi" then
+              vim.api.nvim_win_close(win, true)
+            end
+          end
+
+          vim.defer_fn(function()
+            require("telescope.builtin")[picker]({ cwd = cwd })
+          end, 10)
+        end,
       })
     end,
   },
