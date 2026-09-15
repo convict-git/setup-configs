@@ -61,4 +61,19 @@ vim.api.nvim_create_autocmd('VimEnter', {
   end,
 })
 
+-- outline.nvim pins its sidebar window with 'winfixbuf', which is
+-- window-local, not buffer-local. If the sidebar is the last window left
+-- (e.g. after closing the last file buffer) and its buffer is deleted, Neovim
+-- can't close the window, so it drops an empty [No Name] buffer into it --
+-- and the window keeps 'winfixbuf', making every :edit (yazi's opener
+-- included) fail with E1513. Unpin any window that ends up showing a regular
+-- file buffer; the real sidebar buffer is buftype=nofile, so it's untouched.
+vim.api.nvim_create_autocmd('BufEnter', {
+  callback = function()
+    if vim.wo.winfixbuf and vim.bo.buftype == '' then
+      vim.wo.winfixbuf = false
+    end
+  end,
+})
+
 vim.keymap.set('n', '<leader>o', ':Outline<CR>', { silent = true, desc = 'Toggle symbols outline' })

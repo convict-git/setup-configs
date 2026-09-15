@@ -795,8 +795,20 @@ vim.keymap.set("n", "<F5>", function()
   print("Colorscheme: " .. next)
 end, { desc = "Random Colorscheme" })
 
+-- Deletes buffers directly by id instead of `:bufdo bd`: bufdo cycles the
+-- current buffer through every listed buffer via window switches, which
+-- errors (E1513: Cannot switch buffer. 'winfixbuf' is enabled) the moment a
+-- winfixbuf-locked sidebar window is in the layout -- outline.nvim's window
+-- is exactly that. Deleting by id never asks any window to switch buffers,
+-- so it doesn't touch that window at all. pcall keeps one buffer with
+-- unsaved changes from aborting the rest, same as plain `:bd` would refuse
+-- it but unlike `:bufdo bd`, which halts the whole loop on that buffer.
 local function kill_all_buffers()
-  vim.cmd("bufdo bd")
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[bufnr].buflisted and vim.bo[bufnr].buftype == '' then
+      pcall(vim.api.nvim_buf_delete, bufnr, { force = false })
+    end
+  end
 end
 
 vim.keymap.set("n", "<leader>bd", kill_all_buffers, { desc = "Kill all buffers" })
