@@ -10,6 +10,8 @@ return {
     "SprinklrToggleTree",
   },
   config = function()
+    vim.keymap.set("n", "C-8", ":SprinklrReferences")
+    vim.keymap.set("n", "C-9", ":SprinklrToggleTree")
     require("spr-supercharged").setup()
   end,
 }
