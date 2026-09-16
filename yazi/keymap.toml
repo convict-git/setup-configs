@@ -31,7 +31,6 @@ desc = "Rename bookmark by key"
 [[mgr.prepend_keymap]]
 on  = "C"
 run = [ 'shell -- ~/convict/open-source/setup-configs/scripts/combined_files_contents.sh "$@"' ]
-
 # Inside yazi.nvim, hand off to Telescope rooted at yazi's cwd; standalone keeps the default search
 [[mgr.prepend_keymap]]
 on   = "s"
@@ -42,23 +41,3 @@ desc = "Find files (Telescope in yazi.nvim, fd otherwise)"
 on   = "S"
 run  = 'shell -- if [ -n "$NVIM_CWD" ]; then ya pub-to 0 nvim-live-grep --str "$PWD"; else ya emit search --via=rg; fi'
 desc = "Grep file contents (Telescope in yazi.nvim, rg otherwise)"
-
-[[mgr.prepend_keymap]]
-on   = "l"
-run  = "plugin smart-enter"
-desc = "Enter the child directory, or open the file"
-
-[[mgr.prepend_keymap]]
-on   = "T"
-run  = "plugin toggle-pane max-preview"
-desc = "Maximize or restore the preview pane"
-
-[[mgr.prepend_keymap]]
-on   = "M"
-run  = "plugin mount"
-desc = "Mount, unmount, or eject a device"
-
-[[mgr.prepend_keymap]]
-on   = ["c", "m"]
-run  = "plugin chmod"
-desc = "Chmod on the selected files"
