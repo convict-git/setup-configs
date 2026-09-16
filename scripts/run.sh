@@ -11,9 +11,8 @@ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 # telescope-fzf-native
 # 
 
-# yazi yamb
-git clone https://github.com/h-hg/yamb.yazi.git ~/.config/yazi/plugins/yamb.yazi
-ya pack -a h-hg/yamb
+# yamb is vendored in yazi/plugins/yamb.yazi at revision 22af003 so it
+# remains compatible with Yazi versions older than 25.6.11.
 
 # oh-my-zsh plugins
 cd ~/.oh-my-zsh/custom/plugins
@@ -21,6 +20,5 @@ git clone https://github.com/zsh-users/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 git clone https://github.com/jeffreytse/zsh-vi-mode
 git clone https://github.com/zsh-users/zsh-history-substring-search
-
 
 
