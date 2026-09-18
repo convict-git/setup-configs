@@ -11,9 +11,8 @@ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 # telescope-fzf-native
 # 
 
-# yazi plugins/flavor (all declared in yazi/package.toml)
-# yazi/plugins/ is gitignored: it is package-manager output, not config.
-ya pkg install
+# yamb is vendored in yazi/plugins/yamb.yazi at revision 22af003 so it
+# remains compatible with Yazi versions older than 25.6.11.
 
 # oh-my-zsh plugins
 cd ~/.oh-my-zsh/custom/plugins

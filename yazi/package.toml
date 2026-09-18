@@ -1,9 +1,7 @@
-[[plugin.deps]]
-use = "h-hg/yamb"
-rev = "971b858"
-hash = "da4534745930e827a44d4585bbd965eb"
+[plugin]
+deps = []
 
 [[flavor.deps]]
 use = "tkapias/nightfly"
 rev = "599b8ad"
-hash = "79f760d46e08b2f3708516d1d026e3fa"
+hash = "d1a9e05ecbbd63bc5bb85a54e7f1e33a"
