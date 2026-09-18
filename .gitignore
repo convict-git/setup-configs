@@ -1,2 +1,8 @@
 lazy-lock.json
+
+# Yazi: runtime state and package-manager output, not config.
+# `ya pkg install` writes into ~/.config/yazi/plugins, which is a symlink
+# into this repo, so these would otherwise show up as tracked changes.
 bookmark
+yazi/plugins/
+yazi/flavors/
