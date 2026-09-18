@@ -64,7 +64,9 @@ local save_to_file = function(mb_path, bookmarks)
 end
 
 local fzf_find = function(cli, mb_path)
-  local permit = ya.hide()
+  -- local patch: ya.hide moved to ui.hide in newer Yazi; upstream 971b858
+  -- uses the same fallback. Keeps this legacy revision working on both.
+  local permit = (ui.hide or ya.hide)()
   local cmd = string.format("%s < \"%s\"", cli, mb_path)
   local handle = io.popen(cmd, "r")
   local result = ""
@@ -108,9 +110,12 @@ local action_jump = function(bookmarks, path, jump_notify)
   end
   local tag = bookmarks[path].tag
   if string.sub(path, -1) == path_sep then
-    ya.manager_emit("cd", { path })
+    -- local patch: ya.manager_emit was renamed to ya.emit in newer Yazi.
+    local emit = ya.emit or ya.manager_emit
+    emit("cd", { path })
   else
-    ya.manager_emit("reveal", { path })
+    local emit = ya.emit or ya.manager_emit
+    emit("reveal", { path })
   end
   if jump_notify then
     ya.notify {
