@@ -23,6 +23,7 @@ docs_refresh_inventory() {
           deps=(${(f)"$(HOMEBREW_NO_AUTO_UPDATE=1 brew deps --formula $name 2>/dev/null)"})
           print -r -- "brew-deps $name ${(j: :)deps}" >> $INVENTORY ;;
         cask)
+          grep -q "^cask-host $name " $INVENTORY && continue
           url=$(HOMEBREW_NO_AUTO_UPDATE=1 brew info --json=v2 --cask $name 2>/dev/null |
             plutil -extract casks.0.url raw -o - - 2>/dev/null)
           url=${${url#*://}%%/*}
@@ -87,7 +88,7 @@ docs_intents() {
     deps=()
     for line in $formulae; do
       rest=$(inventory_get brew-deps $line)
-      [[ -n $rest ]] && deps+="- **$line** → ${(j:, :)${=rest}}"
+      [[ -n ${rest// /} ]] && deps+="- **$line** → ${(j:, :)${=rest}}"
     done
     if (( $#deps )); then
       print -r -- "<details><summary>What these Homebrew formulae pull in</summary>"
@@ -117,8 +118,6 @@ docs_hosts() {
     for line in ${(f)I_PACKAGES[$id]}; do
       [[ ${line%% *} == cask ]] || continue
       name=${${line#cask }%% *}
-      host=$(inventory_get cask-host $name)
-      [[ -n $host && ${used_by[$host]} != *${I_TITLE[$id]}* ]] && used_by[$host]+="${used_by[$host]:+, }${I_TITLE[$id]}"
     done
   done
   print -r -- "| Host | Used by |"

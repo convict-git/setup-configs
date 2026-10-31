@@ -13,7 +13,7 @@ sudo_steps=(
   "Install the Command Line Tools with softwareupdate"
   "Install Homebrew into /opt/homebrew with its official installer"
 )
-hosts=(swscan.apple.com swcdn.apple.com raw.githubusercontent.com github.com)
+hosts=(swscan.apple.com swcdn.apple.com raw.githubusercontent.com github.com formulae.brew.sh ghcr.io)
 
 ask() {
   if [[ -n ${SYS[clt]} ]]; then

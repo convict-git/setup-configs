@@ -7,8 +7,12 @@ typeset -gA STATE REASON   # STATE: chosen declined unavailable done failed skip
 typeset -g CUR             # the intent being processed, for caution()
 typeset -g WHY_NOT         # set by an intent's available() when it returns 1
 
+# Hosts every brew install talks to: formula metadata, and bottles (with their redirect)
+BREW_HOSTS=(formulae.brew.sh ghcr.io pkg-containers.githubusercontent.com)
+
 load_intents() {
-  local file fn
+  local file fn line host
+  local -a extra_hosts
   local id title why always
   local -a requires works_best_with hosts packages behind sudo_steps targets cask_apps
   for file in $ROOT/intents/<->-*.zsh(n); do
@@ -19,7 +23,18 @@ load_intents() {
     INTENT_IDS+=$id
     I_TITLE[$id]=$title I_WHY[$id]=$why I_ALWAYS[$id]=$always
     I_REQUIRES[$id]=${(j: :)requires} I_SOFT[$id]=${(j: :)works_best_with}
-    I_HOSTS[$id]=${(j: :)hosts} I_SUDO[$id]=${(pj:\n:)sudo_steps}
+    # brew and cask lines add Homebrew's hosts and each cask's download host
+    extra_hosts=()
+    for line in $packages; do
+      [[ $line == (brew|cask)\ * ]] && extra_hosts+=($BREW_HOSTS)
+      [[ $line == cask\ * ]] || continue
+      host=$(inventory_get cask-host ${${line#cask }%% *})
+      [[ $host == github.com ]] && extra_hosts+=(github.com release-assets.githubusercontent.com) ||
+        { [[ -n $host ]] && extra_hosts+=$host }
+    done
+    extra_hosts=($hosts $extra_hosts)
+    I_HOSTS[$id]=${(j: :)${(u)extra_hosts}}
+    I_SUDO[$id]=${(pj:\n:)sudo_steps}
     I_PACKAGES[$id]=${(pj:\n:)packages} I_BEHIND[$id]=${(pj:\n:)behind}
     I_TARGETS[$id]=${(pj:\n:)targets}
     ALL_TARGETS+=($targets)

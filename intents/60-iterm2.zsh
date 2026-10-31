@@ -9,7 +9,6 @@ packages=(
   "repo iterm2/ as iTerm2's settings folder"
 )
 cask_apps=(iterm2 iTerm.app)
-hosts=(iterm2.com github.com)
 
 available() {
   cask_present iterm2 || brew_usable && return 0

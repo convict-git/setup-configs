@@ -9,7 +9,6 @@ packages=(
   "brew bat"
   "repo scripts/fd-cache.sh → ~/.local/bin/fd-cache (fd with a 1-minute cache)"
 )
-hosts=(formulae.brew.sh ghcr.io pkg-containers.githubusercontent.com)
 targets=($HOME/.local/bin/fd-cache)
 
 available() { brew_usable || { WHY_NOT=$(brew_why_not); return 1 } }

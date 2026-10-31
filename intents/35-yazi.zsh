@@ -8,7 +8,6 @@ packages=(
   "cask font-symbols-only-nerd-font"
   "repo yazi/ → ~/.config/yazi (plugins and the nightfly flavor included)"
 )
-hosts=(github.com)
 targets=($HOME/.config/yazi)
 
 apply() {
