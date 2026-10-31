@@ -1,1 +1,0 @@
-- miniwinter.patch -> .local/share/nvim/lazy/mini.nvim/colors/miniwinter.lua
