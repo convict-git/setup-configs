@@ -1,9 +1,16 @@
 -- Coc settings
-vim.g.coc_global_extensions = {
-  'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint',
+-- Language extensions follow the toolchains install.sh set up: tsgo (TS/JS),
+-- clang-format (C/C++, from the Command Line Tools) and rust-analyzer (Rust)
+local function has(cmd) return vim.fn.executable(cmd) == 1 end
+local extensions = {
+  'coc-cmake', 'coc-docker', 'coc-emmet',
   -- 'coc-graphql',
-  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-floaterm'
+  'coc-json', 'coc-git', 'coc-sh', 'coc-yaml', 'coc-floaterm'
 }
+if has('tsgo') then vim.list_extend(extensions, { 'coc-tsserver', 'coc-eslint', 'coc-prettier' }) end
+if has('clang-format') then table.insert(extensions, 'coc-clangd') end
+if has('rust-analyzer') then table.insert(extensions, 'coc-rust-analyzer') end
+vim.g.coc_global_extensions = extensions
 
 vim.opt.backup = false
 vim.opt.writebackup = false

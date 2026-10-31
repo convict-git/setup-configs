@@ -57,6 +57,12 @@ vim.cmd("syntax on") -- Enable syntax highlighting (again, for good measure)
 require('plugins/bigfile')
 
 -- ***************************************************************************
+-- Plugins that only serve an optional install.sh intent (yazi, C/C++, debugging)
+-- are enabled only when that intent's tool is on PATH, so lazy.nvim never
+-- downloads them on machines without it.
+local function has(cmd) return vim.fn.executable(cmd) == 1 end
+
+-- ***************************************************************************
 -- Lazy.nvim bootstrap
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -77,7 +83,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   { 'tpope/vim-fugitive' },
   -- { 'rust-lang/rust.vim' }, // ToDo
-  { 'rhysd/vim-clang-format' },
+  { 'rhysd/vim-clang-format', enabled = has('clang-format') },
   -- Removed 'octol/vim-cpp-enhanced-highlight': redundant regex C/C++ highlighting,
   -- superseded by the treesitter `cpp` parser (and slow on large C/C++ files).
   {
@@ -361,9 +367,13 @@ require("lazy").setup({
     end,
   },
 
+  -- snacks.nvim also backs <leader>gb (gitbrowse), so it stays even without yazi
+  { "folke/snacks.nvim" },
+
   -- === Yazi (file-manager) ===
   {
     "mikavilpas/yazi.nvim",
+    enabled = has('yazi'),
     event = "VeryLazy",
     dependencies = {
       -- check the installation instructions at
@@ -488,13 +498,15 @@ require("lazy").setup({
   -- The whole DAP stack loads lazily on the first breakpoint keymap. nvim-dap,
   -- nvim-nio and nvim-dap-virtual-text are pulled in as dependencies of dap-ui.
   { "mfussenegger/nvim-dap",
+    enabled = has('lldb-dap'),
     lazy = true,
     config = function()
       require('plugins/dap')
     end
   },
-  { "nvim-neotest/nvim-nio", lazy = true },
+  { "nvim-neotest/nvim-nio", enabled = has('lldb-dap'), lazy = true },
   { "rcarriga/nvim-dap-ui",
+    enabled = has('lldb-dap'),
     keys = {
       { "<Leader>br", desc = "Toggle Breakpoint" },
       { "<Leader>db", desc = "Close Dap UI" },
@@ -528,6 +540,7 @@ require("lazy").setup({
     end,
   },
   { "theHamsta/nvim-dap-virtual-text",
+    enabled = has('lldb-dap'),
     lazy = true,
     config = function()
       require("nvim-dap-virtual-text").setup()
