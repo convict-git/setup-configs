@@ -1,0 +1,5 @@
+#!/bin/sh
+# Runs the Command Line Tools binary this link is named after (clang-format,
+# lldb-dap), which macOS doesn't put on PATH itself. install.sh links it into
+# ~/.local/bin under each of those names.
+exec xcrun "$(basename "$0")" "$@"
