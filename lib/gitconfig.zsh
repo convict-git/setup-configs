@@ -32,7 +32,11 @@ gitconfig_get() {
     section == want_section {
       line = $0; sub(/^[ \t]+/, "", line)
       k = line; sub(/[ \t]*=.*/, "", k)
-      if (tolower(k) == want_key) { v = line; sub(/^[^=]*=[ \t]*/, "", v); gsub(/^"|"$/, "", v); value = v; found = 1 }
+      if (tolower(k) == want_key) {
+        v = line; sub(/^[^=]*=[ \t]*/, "", v); gsub(/^"|"$/, "", v)
+        gsub(/\\"/, "\"", v); gsub(/\\\\/, "\\", v)
+        value = v; found = 1
+      }
     }
     END { if (found) print value; else exit 1 }' $file
 }
