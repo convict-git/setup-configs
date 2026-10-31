@@ -57,10 +57,6 @@ vim.cmd("syntax on") -- Enable syntax highlighting (again, for good measure)
 require('plugins/bigfile')
 
 -- ***************************************************************************
-local cwd = vim.fn.getcwd()
-local is_java_project = vim.fn.getcwd():match("sprinklr.app/?$") ~= nil
-
--- ***************************************************************************
 -- Lazy.nvim bootstrap
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -312,9 +308,6 @@ require("lazy").setup({
     "neoclide/coc.nvim",
     branch = "release",
     -- build = "npm ci",
-    cond = function()
-      return not is_java_project -- Don't load coc for java projects, we will use some other plugins
-    end,
     config = function()
       require('plugins/coc-config')
     end,
@@ -491,22 +484,11 @@ require("lazy").setup({
     end,
   },
 
-  -- -- === nvim-java === wait for some time
-  -- {
-  --   "nvim-java/nvim-java",
-  --   dependencies = {
-  --     "neovim/nvim-lspconfig",
-  --   }
-  -- },
-
   -- === Treesitter ===
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
   },
-
-  -- === Mason ===
-  require('plugins/lsp-java-config').get(not is_java_project),
 
   -- === Dropbar ===
   { "Bekaboo/dropbar.nvim",
@@ -1001,7 +983,7 @@ set_custom_highlights()
 -- the tint readable across colorscheme switches. See lua/plugins/line-highlight.lua
 require('plugins/line-highlight').setup({
   -- Only these file extensions (case-insensitive); leave out for all files.
-  extensions = { 'lua', 'js', 'jsx', 'ts', 'tsx', 'java', 'md' },
+  extensions = { 'lua', 'js', 'jsx', 'ts', 'tsx', 'md' },
   rules = {
     { text = 'todo convict', hl = 'DiffText' },
     { text = 'FIXME', hl = 'DiffDelete' },

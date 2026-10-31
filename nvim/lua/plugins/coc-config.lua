@@ -2,7 +2,7 @@
 vim.g.coc_global_extensions = {
   'coc-clangd', 'coc-cmake', 'coc-docker', 'coc-emmet', 'coc-eslint',
   -- 'coc-graphql',
-  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-floaterm', 'coc-java'
+  'coc-json', 'coc-git', 'coc-prettier', 'coc-rust-analyzer', 'coc-sh', 'coc-tsserver', 'coc-yaml', 'coc-floaterm'
 }
 
 vim.opt.backup = false
@@ -10,7 +10,7 @@ vim.opt.writebackup = false
 vim.opt.signcolumn = 'yes'
 
 -- Refresh lualine on CoC status/diagnostic changes, but DEBOUNCED. A large file
--- can emit a burst of diagnostic updates (eslint/tsserver/jdtls), and each
+-- can emit a burst of diagnostic updates (eslint/tsserver), and each
 -- refresh recomputes the whole statusline. Coalesce them into at most one
 -- refresh per window, and skip entirely on big files.
 local lualine_refresh_pending = false
@@ -174,26 +174,4 @@ vim.o.statusline = vim.o.statusline .. '%{coc#status()}%{get(b:,"coc_current_fun
 -- vim.api.nvim_set_hl(0, 'CocInlayTypeHint', { italic = true, fg = '#ff8800' })
 -- vim.api.nvim_set_hl(0, 'CocHintFloat', { italic = true, fg = '#ff8800' })
 -- vim.api.nvim_set_hl(0, 'CocHintSign', { italic = true, fg = '#ff8800' })
-
-
--- === coc-settings.json ===
--- "java.trace.server": "verbose",
--- "java.eclipse.downloadSources": false,
--- "java.autobuild.enabled": false,
--- "java.sharedIndexes.enabled": "on",
--- "java.import.gradle.wrapper.enabled": true,
--- "java.import.gradle.user.home": "/Users/priyanshu.shrivastav/.gradle",
--- "java.import.gradle.home": "/Users/priyanshu.shrivastav/.gradle/wrapper/dists/gradle-8.6-bin/afr5mpiioh2wthjmwnkmdsd5w/gradle-8.6/bin",
--- "java.import.gradle.java.home": "/Users/priyanshu.shrivastav/Library/Java/JavaVirtualMachines/corretto-21.0.5/Contents/Home",
--- "java.import.gradle.offline.enabled": true,
--- "java.import.gradle.arguments": "--offline",
--- "java.configuration.updateBuildConfiguration": "disabled",
--- "java.jdt.ls.java.home": "/Users/priyanshu.shrivastav/Library/Java/JavaVirtualMachines/corretto-21.0.5/Contents/Home",
--- "java.configuration.runtimes": [
---   {
---     "name": "JavaSE-21",
---     "path": "/Users/priyanshu.shrivastav/Library/Java/JavaVirtualMachines/corretto-21.0.5/Contents/Home",
---     "default": true
---   }
--- ]
 
