@@ -85,7 +85,6 @@
     "Shrivastav",
     "SNTYPES",
     "spaceweb",
-    "sprinklr",
     "testid",
     "Typenames",
     "Unhide",
@@ -213,25 +212,6 @@
   "redhat.telemetry.enabled": false,
   "atlascode.jira.enabled": true,
   "atlascode.bitbucket.enabled": false,
-  "atlascode.jira.jqlList": [
-    {
-      "id": "5660881b-9a21-4a19-99e1-30d90624c8c2",
-      "siteId": "95531a2e-c5af-4074-bf24-7cbaf74d4a25",
-      "filterId": "59715",
-      "name": "ps-ssc",
-      "query": "assignee in (60be0e34a174630070419314) AND status in (\"Backlog(Dev)\", \"In Progress\", \"In Dev Review\", \"QA Rejected\") AND labels not in (\"17.7\") ORDER BY created DESC, priority DESC",
-      "enabled": true,
-      "monitor": true
-    },
-    {
-      "id": "dca8a5cc-e2c2-4ca3-9297-61c174e56012",
-      "enabled": true,
-      "name": "My sprinklr Issues",
-      "query": "assignee = currentUser() AND resolution = Unresolved ORDER BY lastViewed DESC",
-      "siteId": "95531a2e-c5af-4074-bf24-7cbaf74d4a25",
-      "monitor": true
-    }
-  ],
   "gitlens.currentLine.format": "${author, }${agoOrDate}${' via 'pullRequest}${ • message|100?} ${tips}",
   "gitlens.codeLens.scopes": ["document"],
   "gitlens.blame.ignoreWhitespace": true,

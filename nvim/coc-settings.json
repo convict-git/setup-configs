@@ -10,8 +10,6 @@
     { "rule": "max-lines-per-function", "severity": "off" },
     { "rule": "max-lines", "severity": "off" },
     { "rule": "max-statements", "severity": "off" },
-    { "rule": "@sprinklrjs/no-js-files", "severity": "off" },
-    { "rule": "@sprinklrjs/no-legacy-i18n", "severity": "off" },
     {
       "rule": "@typescript-eslint/consistent-type-assertions",
       "severity": "off"
