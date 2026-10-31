@@ -1,14 +1,8 @@
-[user]
-	name = Priyanshu Shrivastav
-	email = official.mr.convict@gmail.com
-[includeIf "gitdir:~/code/sprinklr/"]
-  path = ~/.gitconfig-sprinklr
-[includeIf "gitdir:~/code/sprinklr-others/"]
-  path = ~/.gitconfig-sprinklr
+# Included from ~/.gitconfig by install.sh (Git aliases intent).
+# files-by-pattern and files-by-multi-pattern need ripgrep.
 [alias]
 	last = --no-pager log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold dim white)%an%C(reset) %C(white)%s%C(reset) %C(green)(%ar)%C(reset)' --all
 	mlog = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(11,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)' --all
-	stash = stash --include-untracked
 	stashit = stash --include-untracked
 	s = status
 	su = status -uno
@@ -21,7 +15,6 @@
 	fo = fetch origin
 	mnf = merge --no-ff
 	fchr = "!f() { git fetch origin $1 && git checkout $1 && git reset --hard origin/$1; }; f"
-	fchry = "!f() { git fetch origin $1 && git checkout $1 && git reset --hard origin/$1 && yarn; }; f"
 	foam = "!f() { git fetch origin $1 && git merge "origin/$1"; }; f"
 	foams = "!f() { git fetch origin $1 && git merge --squash "origin/$1"; }; f"
 	vlog = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold cyan)%h%C(reset) %C(bold yellow)%d%C(reset) %C(bold blue)%<(10,trunc)%an%C(reset) %C(white)%<(50,trunc)%s%C(reset) %C(green)(%ar)%C(reset)'
@@ -61,25 +54,3 @@
           fi; \
       done; \
   }; f"
-[help]
-	autocorrect = 20
-[diff]
-  tool = idea
-[difftool "cursor"]
-  cmd = code --wait --diff $LOCAL $REMOTE
-[merge]
-  tool = vscode
-[mergetool "vscode"]
-  cmd = code --wait $MERGED
-
-[init]
-	defaultBranch = main
-
-[oh-my-zsh]
-	hide-dirty = 1
-[http]
-	postBuffer = 524288000
-[feature]
-	manyFiles = true
-
-

@@ -1,0 +1,17 @@
+# Included from ~/.gitconfig by install.sh (Git config intent). Your name,
+# email and machine-only settings live in ~/.gitconfig itself; anything
+# written there below the [include] block overrides these.
+[help]
+	autocorrect = 20
+[diff]
+	tool = nvimdiff
+[merge]
+	tool = nvimdiff
+[init]
+	defaultBranch = main
+[oh-my-zsh]
+	hide-dirty = 1
+[http]
+	postBuffer = 524288000
+[feature]
+	manyFiles = true
