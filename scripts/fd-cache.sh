@@ -25,7 +25,7 @@ is_cache_fresh() {
 
 # === HASH CACHE KEY ===
 CWD="$(pwd)"
-KEY="$(echo "${CWD} $*" | sha256sum | awk '{print $1}')"
+KEY="$(echo "${CWD} $*" | shasum -a 256 | awk '{print $1}')"
 CACHE_FILE="${CACHE_DIR}/${KEY}.txt"
 
 # === BACKGROUND REFRESH ===
