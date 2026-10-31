@@ -276,33 +276,6 @@ require("lazy").setup({
     end
   },
 
-  -- === Tree view ===
-  {
-    'nvim-tree/nvim-tree.lua',
-    init = function()
-      vim.g.loaded_netrw = 1
-      vim.g.loaded_netrwPlugin = 1
-      -- optionally enable 24-bit colour
-      vim.opt.termguicolors = true
-    end,
-    cond = false, -- disable for now
-    config = function()
-      require("nvim-tree").setup({
-        sort = {
-          sorter = "case_sensitive",
-        },
-        view = {
-          width = 30,
-        },
-        renderer = {
-          group_empty = true,
-        },
-        filters = {
-          dotfiles = true,
-        },
-      })
-    end,
-  },
   -- === CoC ===
   {
     "neoclide/coc.nvim",
@@ -312,9 +285,6 @@ require("lazy").setup({
       require('plugins/coc-config')
     end,
   },
-
-  -- === Avante ===
-  require('plugins/avante-config').get_avante_lazy_config(false),
 
   -- === Telescope and Extensions ===
   { "nvim-lua/plenary.nvim" },
