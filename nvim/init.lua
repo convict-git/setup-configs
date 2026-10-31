@@ -468,6 +468,9 @@ require("lazy").setup({
   -- === Treesitter ===
   {
     "nvim-treesitter/nvim-treesitter",
+    -- The default branch is now `main`, a rewrite without nvim-treesitter.configs
+    -- (see lua/plugins/treesitter.lua); stay on the archived master branch
+    branch = "master",
     build = ":TSUpdate",
   },
 
