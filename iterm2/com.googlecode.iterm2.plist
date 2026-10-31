@@ -1460,7 +1460,7 @@
 			<key>Window Type</key>
 			<integer>11</integer>
 			<key>Working Directory</key>
-			<string>/Users/priyanshu.shrivastav</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>ASCII Anti Aliased</key>
@@ -2879,7 +2879,7 @@
 			<key>Window Type</key>
 			<integer>11</integer>
 			<key>Working Directory</key>
-			<string>/Users/priyanshu.shrivastav</string>
+			<string></string>
 		</dict>
 	</array>
 	<key>PMPrintingPanelSize</key>
