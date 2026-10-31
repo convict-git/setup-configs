@@ -427,6 +427,17 @@ require("lazy").setup({
     end,
     config = function()
       local yazi = require('yazi')
+
+      -- Force-closing the yazi window (nvim_win_close / :close) only hides its terminal buffer
+      -- (bufhidden=hide): yazi and its `ya sub` listener keep running, so the buffer hover
+      -- highlight is never reset and every leaked listener re-fires our DDS events. Instead ask
+      -- yazi to quit and run the follow-up action once yazi.nvim has finished its exit handling.
+      local after_yazi_quit
+      local function quit_yazi_then(yazi_id, action)
+        after_yazi_quit = action
+        vim.system({ "ya", "emit-to", yazi_id, "quit" })
+      end
+
       yazi.setup({
         -- if you want to open yazi instead of netrw
         open_for_directories = true,
@@ -434,28 +445,30 @@ require("lazy").setup({
         keymaps = {
           show_help = "<f1>",
         },
+        hooks = {
+          -- Drop an action left over from a quit that never completed (e.g. cancelled confirm)
+          yazi_opened = function() after_yazi_quit = nil end,
+          yazi_closed_successfully = function()
+            local action = after_yazi_quit
+            after_yazi_quit = nil
+            if action then vim.schedule(action) end
+          end,
+        },
          set_keymappings_function = function(yazi_buffer, config, context)
             -- Adding custom mapping: <leader>ro => Open all files recursively from hovered directory
             vim.keymap.set({ "t" }, "<leader>ro", function()
-              local hovered_url = context.ya_process.hovered_url
-              local cwd = vim.fn.getcwd()
-              local rel_path = vim.fn.fnamemodify(hovered_url, ":." )  -- relative to cwd
-
-              vim.cmd("close") -- Yazi creates an autocmd for WinLeave where it clears the window
-
-              vim.defer_fn(function()
-                  vim.cmd("OpenAllFilesRecursive " .. rel_path)
-              end, 10)
+              local rel_path = vim.fn.fnamemodify(context.ya_process.hovered_url, ":.")  -- relative to cwd
+              quit_yazi_then(context.ya_process.yazi_id, function()
+                vim.cmd("OpenAllFilesRecursive " .. rel_path)
+              end)
             end, { buffer = yazi_buffer, desc = "Recursively open files from hovered dir" })
 
             -- New mapping for quickfix
             vim.keymap.set({ "t" }, "<leader>rq", function()
-              local hovered_url = context.ya_process.hovered_url
-              local rel_path = vim.fn.fnamemodify(hovered_url, ":.")
-              vim.cmd("close")
-              vim.defer_fn(function()
+              local rel_path = vim.fn.fnamemodify(context.ya_process.hovered_url, ":.")
+              quit_yazi_then(context.ya_process.yazi_id, function()
                 vim.cmd("QuickfixAllFilesRecursive " .. rel_path)
-              end, 10)
+              end)
             end, { buffer = yazi_buffer, desc = "Recursively add files from hovered dir to quickfix" })
           end,
         -- Sent by yazi's `s` / `S` keymaps; bound in yazi rather than as terminal maps so typing in prompts isn't hijacked
@@ -468,17 +481,11 @@ require("lazy").setup({
         callback = function(event)
           local picker = telescope_pickers[event.data.type]
           if not picker then return end
-          local cwd = vim.json.decode(event.data.raw_data)
-
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "yazi" then
-              vim.api.nvim_win_close(win, true)
-            end
-          end
-
-          vim.defer_fn(function()
+          -- Payload is [YAZI_ID, cwd] (see yazi/keymap.toml)
+          local yazi_id, cwd = unpack(vim.json.decode(event.data.raw_data))
+          quit_yazi_then(yazi_id, function()
             require("telescope.builtin")[picker]({ cwd = cwd })
-          end, 10)
+          end)
         end,
       })
     end,
