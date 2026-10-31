@@ -950,15 +950,29 @@ local function set_custom_highlights()
   -- vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
   -- vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
 
-  vim.api.nvim_set_hl(0, '@operator', { bold = true })
-  vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
-  vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
-  vim.api.nvim_set_hl(0, '@keyword', { bold = true })
-  vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
-  vim.api.nvim_set_hl(0, 'Number', { bold = true })
+  -- nvim_set_hl replaces a group outright, so `{ bold = true }` alone would drop the
+  -- theme's fg and leave the code colorless. Layer the style over the theme's
+  -- definition instead, walking up the capture chain (@function.call.tsx ->
+  -- @function.call -> ...) for groups the theme doesn't define itself.
+  local function add_style(group, style)
+    local base, name = {}, group
+    while name do
+      base = vim.api.nvim_get_hl(0, { name = name, link = false })
+      if next(base) then break end
+      name = name:match('^(.+)%.[^.]+$')
+    end
+    vim.api.nvim_set_hl(0, group, vim.tbl_extend('force', base, style))
+  end
+
+  add_style('@operator', { bold = true })
+  add_style('@punctuation', { bold = true })
+  add_style('@punctuation.bracket', { bold = true })
+  add_style('@keyword', { bold = true })
+  add_style('@type', { italic = true, bold = true })
+  add_style('Number', { bold = true })
 
   -- typescript
-  vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
+  add_style('@function.call.tsx', { bold = true })
 
   -- Diagnostics: straight underline instead of the colorscheme's default
   -- squiggly undercurl, keeping whatever color the theme assigned.
