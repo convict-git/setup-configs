@@ -585,9 +585,6 @@ require("lazy").setup({
   },
 
 
-  -- === Sprinklr Supercharged (scanProject / references / traceImports) ===
-  require("plugins/spr-supercharged"),
-
   -- === text-case ===
   {
     "johmsalas/text-case.nvim",
