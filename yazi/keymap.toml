@@ -28,10 +28,6 @@ on = ["u","r"]
 run = "plugin yamb rename_by_key"
 desc = "Rename bookmark by key"
 
-[[mgr.prepend_keymap]]
-on  = "C"
-run = [ 'shell -- ~/convict/open-source/setup-configs/scripts/combined_files_contents.sh "$@"' ]
-
 # Inside yazi.nvim, hand off to Telescope rooted at yazi's cwd; standalone keeps the default search
 [[mgr.prepend_keymap]]
 on   = "s"
