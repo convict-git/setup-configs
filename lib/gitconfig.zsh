@@ -13,10 +13,23 @@ gitconfig_file() {
   fi
 }
 
-# An old setup linked ~/.gitconfig straight to the repo's git/.gitconfig
-gitconfig_is_legacy_link() {
-  local file=$HOME/.gitconfig
-  [[ -L $file && ${file:A} == $ROOT/* ]]
+# gitconfig_link_to_replace: true when ~/.gitconfig is a link that git mustn't
+# write through, with the reason in $REPLY. An old setup linked it to the repo's
+# git/.gitconfig, which is gone now, so the link text is read rather than
+# resolved: :A leaves a dangling link as it is. A link to nothing anywhere else
+# would make git create its target, so that's replaced too.
+gitconfig_link_to_replace() {
+  local file=$HOME/.gitconfig target
+  [[ -L $file ]] || return 1
+  target=$(readlink $file)
+  [[ $target == /* ]] || target=${file:h}/$target
+  if [[ ${target:a} == $ROOT/* || ( -e $file && ${file:A} == $ROOT/* ) ]]; then
+    REPLY="links into this repo"
+  elif [[ ! -e $file ]]; then
+    REPLY="links to $(tildify ${target:a}), which doesn't exist"
+  else
+    return 1
+  fi
 }
 
 # gitconfig_get <section.key>: the last value, read without git if need be
@@ -66,25 +79,36 @@ gitconfig_append() {
 # Quotes a value the way git config writes it
 gitconfig_quote() { print -r -- "\"${${1//\\/\\\\}//\"/\\\"}\"" }
 
-# Replaces a ~/.gitconfig that links into this repo with a file of your own
-gitconfig_replace_legacy_link() {
-  gitconfig_is_legacy_link || return 0
-  local file=$HOME/.gitconfig
+# Replaces a ~/.gitconfig link git mustn't write through with a file of your own.
+# Every helper below that writes calls this first; a dry run shows it once.
+typeset -g GITCONFIG_REPLACED_IN
+gitconfig_replace_link() {
+  local file=$HOME/.gitconfig why
+  gitconfig_link_to_replace || return 0
+  why=$REPLY
   if [[ $MODE == plan ]]; then
-    plan_add "Git config" "~/.gitconfig links into this repo; it becomes a file of your own (old one backed up)"
+    plan_add "Git config" "~/.gitconfig $why; it becomes a file of your own (old one backed up)"
     return 0
   fi
-  step "Replacing ~/.gitconfig, which links into this repo, with a file of your own"
-  run mkdir -p $BACKUP_DIR && run cp -L $file $BACKUP_DIR/.gitconfig && run rm $file || return 1
-  [[ $MODE == dry ]] || print -r -- $file >> $BACKUP_DIR/.manifest
-  detail "Backed up to $(tildify $BACKUP_DIR/.gitconfig); any includeIf lines in it aren't carried over"
+  [[ $GITCONFIG_REPLACED_IN == $MODE ]] && return 0
+  GITCONFIG_REPLACED_IN=$MODE
+  step "Replacing ~/.gitconfig, which $why, with a file of your own"
+  if [[ -e $file ]]; then
+    run mkdir -p $BACKUP_DIR && run cp -L $file $BACKUP_DIR/.gitconfig && run rm $file || return 1
+    [[ $MODE == dry ]] || print -r -- $file >> $BACKUP_DIR/.manifest
+    detail "Backed up to $(tildify $BACKUP_DIR/.gitconfig); any includeIf lines in it aren't carried over"
+  else
+    # cp -L can't copy a link to nothing, so the link itself is kept
+    backup $file
+  fi
 }
 
 # gitconfig_set_user <name> <email>: either may be empty to leave it unset
 gitconfig_set_user() {
   local name=$1 email=$2 file=$(gitconfig_file) done=0
   [[ -z $name && -z $email ]] && return 0
-  if ! gitconfig_is_legacy_link && [[ $(gitconfig_get user.name) == $name && $(gitconfig_get user.email) == $email ]]; then
+  gitconfig_replace_link || return 1
+  if ! gitconfig_link_to_replace && [[ $(gitconfig_get user.name) == $name && $(gitconfig_get user.email) == $email ]]; then
     done=1
   fi
   if [[ $MODE == plan ]]; then
@@ -107,7 +131,8 @@ gitconfig_set_user() {
 # gitconfig_include <repo-relative file>
 gitconfig_include() {
   local file=$(gitconfig_file) inc=$ROOT/$1 done=0
-  ! gitconfig_is_legacy_link && gitconfig_has_include $inc && done=1
+  gitconfig_replace_link || return 1
+  ! gitconfig_link_to_replace && gitconfig_has_include $inc && done=1
   if [[ $MODE == plan ]]; then
     plan_add "Git config" "$(tildify $file): include $1" $done
     return 0
