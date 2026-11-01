@@ -99,8 +99,12 @@ cmd_setup() {
     ip=$(start $BASE_FRESH-wip) || exit 1
     step "Installing the sandbox SSH key for admin"
     install_key $ip
+    # verifypw=any lets install.sh's sudo -v through too; by default it still
+    # asks, because admin's %admin entry in /etc/sudoers wants a password
     step "Allowing admin to sudo without a password and adding the standard user worker"
-    on $ip admin "echo admin | sudo -S -p '' sh -c 'echo \"admin ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/admin && chmod 440 /etc/sudoers.d/admin' &&
+    on $ip admin "echo admin | sudo -S -p '' true &&
+      printf '%s\n' 'admin ALL=(ALL) NOPASSWD: ALL' 'Defaults:admin verifypw=any' | sudo tee /etc/sudoers.d/admin >/dev/null &&
+      sudo chmod 440 /etc/sudoers.d/admin && sudo -k && sudo -n -v &&
       sudo sysadminctl -addUser worker -fullName Worker -password worker -home /Users/worker &&
       sudo createhomedir -c -u worker >/dev/null &&
       sudo mkdir -p /Users/worker/.ssh && sudo cp ~/.ssh/authorized_keys /Users/worker/.ssh/ &&
