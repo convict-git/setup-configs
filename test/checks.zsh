@@ -20,11 +20,12 @@ check() {  # check <description> <command...>
 links_into_repo() { [[ -L $1 && ${1:A} == $ROOT/* ]] }
 no_clt_dialog() { ! pgrep -f "Install Command Line Developer Tools" }
 gitconfig_has() { grep -qF -- $1 $HOME/.gitconfig }
-
-case $scenario in
-  fresh-sudo|brew-own) brew_ok=1 ;;
-  *) brew_ok=0 ;;
-esac
+# The old link went into the backup as it was, and --unlink knows about it
+old_link_backed_up() {
+  local backup=($HOME/.setup-configs-backup/*/.gitconfig(N@))
+  (( $#backup )) && [[ $(readlink $backup[1]) == $ROOT/git/.gitconfig ]] &&
+    grep -qxF -- $HOME/.gitconfig ${backup[1]:h}/.manifest
+}
 
 print "Checks for $scenario"
 check "Apple's install dialog for the Command Line Tools never opened" no_clt_dialog
@@ -39,7 +40,7 @@ if [[ -x /Library/Developer/CommandLineTools/usr/bin/git ]]; then
   check "git sees the base settings (merge.tool)" test "$(git config merge.tool)" = nvimdiff
 fi
 
-if (( brew_ok )); then
+if [[ $scenario == (fresh-sudo|brew-own) ]]; then
   check "Core CLI tools installed" test -e $B/opt/fd -a -e $B/opt/ripgrep -a -e $B/opt/fzf -a -e $B/opt/bat
   check "fd-cache linked" links_into_repo $HOME/.local/bin/fd-cache
   check "Git aliases included" gitconfig_has "$ROOT/git/aliases.gitconfig"
@@ -64,10 +65,28 @@ if (( brew_ok )); then
   check "iTerm2 installed in ~/Applications" test -d $HOME/Applications/iTerm.app
   check "iTerm2 loads settings from the repo" test "$(defaults read com.googlecode.iterm2 PrefsCustomFolder)" = $ROOT/iterm2
   check "lazy-lock.json unchanged" git -C $ROOT diff --quiet -- nvim/lazy-lock.json
-else
+elif [[ $scenario == (fresh-nosudo|brew-other) ]]; then
   check "Nothing installed with brew" test ! -e $B/opt/fd
   check "No links made for brew-based intents" test ! -L $HOME/.zshrc -a ! -L $HOME/.config/nvim
 fi
+
+case $scenario in
+  declines)
+    check "Core CLI tools installed" test -e $B/opt/fd -a -e $B/opt/ripgrep
+    check "~/.zshrc linked" links_into_repo $HOME/.zshrc
+    check "The saved answers keep iTerm2's no" grep -qx intent_iterm2=n $HOME/.config/setup-configs/answers.env
+    check "iTerm2 (declined) not installed" test ! -e $HOME/Applications/iTerm.app
+    check "iTerm2's settings folder (declined) not set" test -z "$(defaults read com.googlecode.iterm2 PrefsCustomFolder 2>/dev/null)"
+    check "Neovim (declined) not linked" test ! -e $HOME/.config/nvim -a ! -L $HOME/.config/nvim
+    check "yazi (declined) not installed" test ! -e $B/opt/yazi
+    ;;
+  legacy-link)
+    check "~/.gitconfig is a file of its own" test -f $HOME/.gitconfig -a ! -L $HOME/.gitconfig
+    check "Nothing written into the repo's git/.gitconfig" test ! -e $ROOT/git/.gitconfig -a ! -L $ROOT/git/.gitconfig
+    check "The old link is in the backup and its manifest" old_link_backed_up
+    check "Git aliases included" gitconfig_has "$ROOT/git/aliases.gitconfig"
+    ;;
+esac
 
 print
 (( failures )) && { print "$failures check(s) failed"; exit 1 }

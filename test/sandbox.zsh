@@ -10,7 +10,7 @@
 #   test/sandbox.zsh clean            delete test VMs, keep the base ones
 #   test/sandbox.zsh purge            delete every VM and Tart's image cache; offers to uninstall Tart
 #
-# Scenarios: fresh-sudo, fresh-nosudo, brew-other, brew-own (see README "Testing in a VM").
+# Scenarios: fresh-sudo, fresh-nosudo, brew-other, brew-own, declines, legacy-link (see README).
 # SANDBOX_YES=1 answers yes to this script's own questions, for running it unattended.
 
 emulate zsh
@@ -149,9 +149,10 @@ cmd_setup() {
   say "✓ Base VMs ready: $BASE_FRESH, $BASE_BREW"
 }
 
-# The answers each scenario runs with: every intent yes
+# answers_for <sudo> [declined intent...]: the answers a scenario runs with,
+# every other intent yes
 answers_for() {
-  local sudo=$1 id
+  local sudo=$1 id; shift
   print "use_sudo=$sudo"
   print "install_clt=y"
   print "install_brew=y"
@@ -159,18 +160,26 @@ answers_for() {
   print "git_email=sandbox@example.com"
   for id in core_cli deimos_font git_config git_aliases zsh nvm yazi yazi_previews neovim \
             neovim_ts neovim_cpp neovim_rust iterm2 vscode; do
-    print "intent_$id=y"
+    (( ${@[(Ie)$id]} )) && print "intent_$id=n" || print "intent_$id=y"
   done
 }
 
 cmd_run() {
-  local scenario=$1 base user sudo vm ip rc
+  local scenario=$1 base user sudo vm ip install_rc checks_rc before declined=()
   case $scenario in
     fresh-sudo)   base=$BASE_FRESH user=admin  sudo=y ;;
     fresh-nosudo) base=$BASE_FRESH user=worker sudo=n ;;
     brew-other)   base=$BASE_BREW  user=worker sudo=n ;;
     brew-own)     base=$BASE_BREW  user=admin  sudo=n ;;
-    *) die "Unknown scenario '$scenario'. Pick one of: fresh-sudo fresh-nosudo brew-other brew-own" ;;
+    # Saved "no"s must hold, iTerm2's (a key with a digit) included
+    declines)     base=$BASE_BREW  user=admin  sudo=n
+                  declined=(nvm yazi yazi_previews neovim neovim_ts neovim_cpp neovim_rust iterm2 vscode) ;;
+    # An old setup's ~/.gitconfig, linked to the repo's git/.gitconfig, which is gone
+    # now (the copy brings along an untracked one if this checkout still has it)
+    legacy-link)  base=$BASE_BREW  user=admin  sudo=n
+                  declined=(zsh nvm yazi yazi_previews neovim neovim_ts neovim_cpp neovim_rust iterm2 vscode)
+                  before="rm -f $GUEST_REPO/git/.gitconfig && ln -s $GUEST_REPO/git/.gitconfig ~/.gitconfig" ;;
+    *) die "Unknown scenario '$scenario'. Pick one of: fresh-sudo fresh-nosudo brew-other brew-own declines legacy-link" ;;
   esac
   need_tart
   vm_exists $base || die "$base is missing; run: test/sandbox.zsh setup"
@@ -187,19 +196,24 @@ cmd_run() {
     sudo chown -R ${user}:staff /Users/$user/${${GUEST_REPO#\~/}%%/*}" &&
     on $ip $user "test -r $GUEST_REPO/install.sh" ||
     die "Couldn't copy the repo"
-  answers_for $sudo | ssh $SSH_OPTS $user@$ip "cat > /tmp/answers.env" || die "Couldn't write the answers"
+  answers_for $sudo $declined | ssh $SSH_OPTS $user@$ip "cat > /tmp/answers.env" || die "Couldn't write the answers"
+  if [[ -n $before ]]; then
+    step "Before installing, as $user: $before"
+    on $ip $user $before || die "Couldn't prepare the scenario"
+  fi
 
   step "Running install.sh as $user (sudo: $sudo)"
   on $ip $user "zsh $GUEST_REPO/install.sh --answers /tmp/answers.env"
-  rc=$?
-  say "install.sh exited with $rc"
+  install_rc=$?
+  say "install.sh exited with $install_rc"
 
   step "Checking the result"
   on $ip $user "zsh $GUEST_REPO/test/checks.zsh $scenario"
-  rc=$?
+  checks_rc=$?
   print
   say "VM kept for a look: test/sandbox.zsh ssh $vm $user (delete with: test/sandbox.zsh clean)"
-  return $rc
+  # A failed install fails the run even when the checks pass
+  (( install_rc == 0 && checks_rc == 0 ))
 }
 
 cmd_new() {

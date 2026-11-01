@@ -395,8 +395,10 @@ The base image is about 25 GB.
 | `test/sandbox.zsh purge` | Deletes everything, including the base VMs and Tart's image cache, and offers to uninstall Tart |
 
 Scenarios: `fresh-sudo` (fresh Mac, sudo yes), `fresh-nosudo` (fresh Mac, standard
-user), `brew-other` (Homebrew owned by another user, no sudo) and `brew-own`
-(Homebrew owned by you, no sudo).
+user), `brew-other` (Homebrew owned by another user, no sudo), `brew-own`
+(Homebrew owned by you, no sudo), `declines` (some intents answered no, iTerm2's
+among them) and `legacy-link` (`~/.gitconfig` linked to the repo's old
+`git/.gitconfig`). A run fails if `install.sh` or the checks do.
 
 To watch the installer yourself, run `test/sandbox.zsh new --window`. The VM logs in as
 `admin`; in its Terminal, `ditto '/Volumes/My Shared Files/repo' ~/convict/open-source/setup-configs`
