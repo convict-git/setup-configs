@@ -275,7 +275,7 @@ tsgo (the native TypeScript language server) plus coc's tsserver, eslint and pre
 
 | Source | What |
 |---|---|
-| npm | @typescript/native-preview (tsgo) → ~/.local |
+| npm | @typescript/native-preview@7.0.0-dev.20260707.2 (tsgo) → ~/.local |
 | coc.nvim | coc-tsserver, coc-eslint, coc-prettier |
 
 Downloads from: `registry.npmjs.org`
