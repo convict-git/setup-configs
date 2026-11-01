@@ -166,21 +166,27 @@ show_plan() {
 
 # Applies chosen intents in order; an intent whose dependency failed is skipped
 apply_all() {
-  local id dep failed_dep
+  local id dep failed_dep n=0 total=0 start took
+  for id in $INTENT_IDS; do [[ ${STATE[$id]} == chosen ]] && (( ++total )); done
   for id in $INTENT_IDS; do
     [[ ${STATE[$id]} == chosen ]] || continue
     CUR=$id failed_dep=''
     for dep in ${=I_REQUIRES[$id]}; do
       [[ ${STATE[$dep]} == done ]] || failed_dep=$dep
     done
-    heading "${I_TITLE[$id]}"
+    (( ++n ))
+    heading "${I_TITLE[$id]}" "($n of $total)"
+    term_title "setup-configs · ${I_TITLE[$id]} ($n of $total)"
     if [[ -n $failed_dep ]]; then
       STATE[$id]=skipped REASON[$id]="${I_TITLE[$failed_dep]} didn't finish"
       warn "Skipped: ${REASON[$id]}"
       continue
     fi
+    start=$EPOCHREALTIME
     if apply:$id; then
       STATE[$id]=done
+      took=$(( EPOCHREALTIME - start ))
+      if [[ $MODE != dry ]]; then (( took >= 1 )) && ok "Done in $(fmt_duration $took)" || ok "Done"; fi
     else
       STATE[$id]=failed REASON[$id]="see the log"
       fail "${I_TITLE[$id]} didn't finish"
@@ -190,13 +196,33 @@ apply_all() {
     [[ ${STATE[$id]} == done ]] && (( $+functions[finish:$id] )) || continue
     CUR=$id
     heading "${I_TITLE[$id]}: finishing"
+    term_title "setup-configs · ${I_TITLE[$id]}: finishing"
     finish:$id || { STATE[$id]=failed REASON[$id]="its final step failed; see the log"; fail "${I_TITLE[$id]} didn't finish" }
   done
 }
 
+# Opens with a count of each outcome, then one line per intent
 summarize() {
-  local id line
-  heading "Summary"
+  local id line state n
+  local -A count
+  local -a shown plain
+  for id in $INTENT_IDS; do
+    state=${STATE[$id]/unavailable/skipped}
+    (( count[$state]++ ))
+  done
+  heading "Summary" "${RUN_START:+($(fmt_duration $(( EPOCHREALTIME - RUN_START ))))}"
+  for state in done failed skipped declined; do
+    n=${count[$state]:-0}
+    (( n )) || continue
+    plain+="$n ${${state/declined/not chosen}}"
+    case $state in
+      done)   shown+="${C[green]}$n done${C[reset]}" ;;
+      failed) shown+="${C[bold]}${C[red]}$n failed${C[reset]}" ;;
+      *)      shown+="${C[grey]}$plain[-1]${C[reset]}" ;;
+    esac
+  done
+  print -r -- "  ${(j: · :)shown}"
+  log_line "  ${(j: · :)plain}"
   for id in $INTENT_IDS; do
     case ${STATE[$id]} in
       done)        ok "${I_TITLE[$id]}" ;;

@@ -64,7 +64,11 @@ path=($HOME/.local/bin $BREW_PREFIX/bin $BREW_PREFIX/opt/rustup/bin $path)
 typeset -U path
 
 typeset -gA ANS FOUNDATION
-typeset -g USE_SUDO=0
+typeset -g USE_SUDO=0 RUN_START='' TITLE_SET=0
+
+# Hand the window title back however the run ends; Ctrl-C ends it through exit
+trap '(( TITLE_SET )) && term_title ""' EXIT
+trap 'exit 130' INT
 
 load_answers() {
   local file=$1 key value
@@ -192,6 +196,7 @@ main() {
     return 2
   fi
   banner
+  [[ $ACTION == check ]] || { term_title "setup-configs"; TITLE_SET=1 }
   [[ $ACTION == check ]] || ask_sudo
   detect_all
   print_precheck
@@ -219,7 +224,7 @@ main() {
     return 0
   fi
   save_answers
-  MODE=apply
+  MODE=apply RUN_START=$EPOCHREALTIME
   apply_all
   convert_to_clone
   summarize
