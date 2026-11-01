@@ -10,6 +10,7 @@
 #   test/sandbox.zsh purge            delete every VM and Tart's image cache; offers to uninstall Tart
 #
 # Scenarios: fresh-sudo, fresh-nosudo, brew-other, brew-own (see README "Testing in a VM").
+# SANDBOX_YES=1 answers yes to this script's own questions, for running it unattended.
 
 emulate zsh
 setopt extended_glob
@@ -24,11 +25,12 @@ GUEST_REPO='~/convict/open-source/setup-configs'
 SHARE='/Volumes/My Shared Files/repo'
 
 say()  { print -r -- "  $*" }
-step() { print -r -- "  → $*" }
+step() { print -u2 -r -- "  → $*" }
 die()  { print -u2 -r -- "  ✗ $*"; exit 1 }
 
 confirm() {
   local reply
+  [[ $SANDBOX_YES == 1 ]] && { say "$1 yes (SANDBOX_YES)"; return 0 }
   print -n -- "  ? $1 [y/N] "
   read -r reply < /dev/tty
   [[ ${reply:l} == y(es|) ]]
@@ -82,33 +84,39 @@ EOF
 cmd_setup() {
   local ip
   if (( ! $+commands[tart] )); then
-    confirm "Install Tart with Homebrew (brew install cirruslabs/cli/tart)?" || die "Tart is needed"
-    brew install cirruslabs/cli/tart || die "Couldn't install Tart"
+    confirm "Install Tart with Homebrew (brew install openai/tools/tart)?" || die "Tart is needed"
+    brew install openai/tools/tart || die "Couldn't install Tart"
   fi
   [[ -f $KEY ]] || { mkdir -p ${KEY:h}; ssh-keygen -q -t ed25519 -N '' -C setup-configs-sandbox -f $KEY }
 
+  # Each base VM is built under a -wip name and renamed once it's done, so a
+  # failed setup never leaves a half-built base behind
   if ! vm_exists $BASE_FRESH; then
     confirm "Download the macOS Tahoe image (about 25 GB) and build $BASE_FRESH?" || die "Stopped"
+    vm_exists $BASE_FRESH-wip && tart delete $BASE_FRESH-wip
     step "Cloning $IMAGE"
-    tart clone $IMAGE $BASE_FRESH || die "Couldn't download the image"
-    ip=$(start $BASE_FRESH)
+    tart clone $IMAGE $BASE_FRESH-wip || die "Couldn't download the image"
+    ip=$(start $BASE_FRESH-wip) || exit 1
     step "Installing the sandbox SSH key for admin"
     install_key $ip
     step "Allowing admin to sudo without a password and adding the standard user worker"
     on $ip admin "echo admin | sudo -S -p '' sh -c 'echo \"admin ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/admin && chmod 440 /etc/sudoers.d/admin' &&
-      sudo sysadminctl -addUser worker -fullName Worker -password worker -home /Users/worker 2>/dev/null &&
+      sudo sysadminctl -addUser worker -fullName Worker -password worker -home /Users/worker &&
       sudo createhomedir -c -u worker >/dev/null &&
       sudo mkdir -p /Users/worker/.ssh && sudo cp ~/.ssh/authorized_keys /Users/worker/.ssh/ &&
       sudo chown -R worker:staff /Users/worker/.ssh && sudo chmod 700 /Users/worker/.ssh &&
       (dseditgroup -o read com.apple.access_ssh >/dev/null 2>&1 && sudo dseditgroup -o edit -a worker -t user com.apple.access_ssh || true)" ||
       die "Couldn't prepare $BASE_FRESH"
-    stop $BASE_FRESH
+    on $ip worker true || die "worker can't log in over SSH"
+    stop $BASE_FRESH-wip
+    tart rename $BASE_FRESH-wip $BASE_FRESH
   fi
 
   if ! vm_exists $BASE_BREW; then
     step "Building $BASE_BREW from $BASE_FRESH"
-    tart clone $BASE_FRESH $BASE_BREW || die "Couldn't clone $BASE_FRESH"
-    ip=$(start $BASE_BREW)
+    vm_exists $BASE_BREW-wip && tart delete $BASE_BREW-wip
+    tart clone $BASE_FRESH $BASE_BREW-wip || die "Couldn't clone $BASE_FRESH"
+    ip=$(start $BASE_BREW-wip) || exit 1
     step "Installing the Command Line Tools and Homebrew as admin"
     on $ip admin 'touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress &&
       label=$(softwareupdate -l 2>/dev/null | sed -n "s/^.*\* Label: \(Command Line Tools.*\)$/\1/p" | sort -V | tail -1) &&
@@ -116,7 +124,8 @@ cmd_setup() {
       rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress &&
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' ||
       die "Couldn't install the Command Line Tools and Homebrew in $BASE_BREW"
-    stop $BASE_BREW
+    stop $BASE_BREW-wip
+    tart rename $BASE_BREW-wip $BASE_BREW
   fi
   say "✓ Base VMs ready: $BASE_FRESH, $BASE_BREW"
 }
@@ -149,12 +158,12 @@ cmd_run() {
   vm=sc-$scenario-$(date +%H%M%S)
   step "Cloning $base as $vm"
   tart clone $base $vm || die "Couldn't clone $base"
-  ip=$(start $vm share)
+  ip=$(start $vm share) || exit 1
 
   step "Copying this repo (with uncommitted changes) into $user's home"
   on $ip $user "mkdir -p ~/convict/open-source && ditto '$SHARE' $GUEST_REPO && rm -rf $GUEST_REPO/test/.sandbox" >/dev/null ||
     die "Couldn't copy the repo"
-  answers_for $sudo | on $ip $user "cat > /tmp/answers.env" >/dev/null
+  answers_for $sudo | ssh $SSH_OPTS $user@$ip "cat > /tmp/answers.env" || die "Couldn't write the answers"
 
   step "Running install.sh as $user (sudo: $sudo)"
   on $ip $user "zsh $GUEST_REPO/install.sh --answers /tmp/answers.env"
@@ -175,7 +184,7 @@ cmd_new() {
   need_tart
   vm=sc-manual-$(date +%H%M%S)
   tart clone $base $vm || die "Couldn't clone $base"
-  ip=$(start $vm share)
+  ip=$(start $vm share) || exit 1
   say "✓ $vm is running at $ip. The repo is shared at '$SHARE'."
   say "  Log in: test/sandbox.zsh ssh $vm [admin|worker]"
 }
@@ -219,7 +228,7 @@ cmd_purge() {
   step "Pruning Tart's cache"
   tart prune --entries=caches --older-than=0 >/dev/null 2>&1
   rm -rf ${KEY:h}
-  if confirm "Uninstall Tart too?"; then brew uninstall cirruslabs/cli/tart; fi
+  if confirm "Uninstall Tart too?"; then brew uninstall openai/tools/tart; fi
   say "✓ Purged"
 }
 

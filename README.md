@@ -384,7 +384,7 @@ The base image is about 25 GB.
 
 | Command | What it does |
 |---|---|
-| `test/sandbox.zsh setup` | Installs Tart (Homebrew) and builds two base VMs: `golden-fresh` (clean macOS plus a standard, non-admin user `worker`) and `golden-brew` (Command Line Tools plus a Homebrew owned by `admin`) |
+| `test/sandbox.zsh setup` | Installs Tart (Homebrew) and builds two base VMs: `sc-golden-fresh` (clean macOS plus a standard, non-admin user `worker`) and `sc-golden-brew` (Command Line Tools plus a Homebrew owned by `admin`) |
 | `test/sandbox.zsh run <scenario>` | Clones a base VM, shares this repo into it, runs the installer there, and checks the result |
 | `test/sandbox.zsh new [base]` / `ssh <vm>` | A VM to poke at by hand |
 | `test/sandbox.zsh ls` | VMs and their disk use |
