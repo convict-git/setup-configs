@@ -17,7 +17,7 @@ ask() {
 }
 
 apply() {
-  gitconfig_set_user ${ANS[git_name]} ${ANS[git_email]} || return 1
+  gitconfig_set_user "${ANS[git_name]}" "${ANS[git_email]}" || return 1
   gitconfig_include git/base.gitconfig || return 1
   [[ $MODE == plan ]] && return 0
   detect_git
