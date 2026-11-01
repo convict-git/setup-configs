@@ -376,7 +376,9 @@ formulae come from `formulae.brew.sh` (metadata) and `ghcr.io` (bottles).
 - **Backups** of replaced files go to `~/.setup-configs-backup/<time>/`. Before iTerm2 is
   pointed at `iterm2/`, its current settings are exported there as
   `com.googlecode.iterm2.plist`.
-- **Logs** of every run go to `~/.local/state/setup-configs/<time>.log`.
+- **Logs** of every run go to `~/.local/state/setup-configs/<time>.log`, with the time of
+  each line and every command's full output. On screen, a command's output scrolls in a
+  small window that folds away once it succeeds; a failure keeps its last 30 lines.
 - **Undo** with `install.sh --unlink`. It also offers to import iTerm2's earlier settings
   (iTerm2 must be closed for that).
 
