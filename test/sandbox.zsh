@@ -3,7 +3,8 @@
 #
 #   test/sandbox.zsh setup            install Tart and build the two base VMs
 #   test/sandbox.zsh run <scenario>   run install.sh in a fresh clone of a base VM, then check it
-#   test/sandbox.zsh new [base]       a clone to poke at by hand (base: fresh or brew)
+#   test/sandbox.zsh new [base]       a clone to poke at by hand (base: fresh or brew); add --window
+#                                     to see its screen, or --vnc for Screen Sharing (copy and paste work)
 #   test/sandbox.zsh ssh <vm> [user]  log in (user: admin or worker)
 #   test/sandbox.zsh ls               VMs and disk use
 #   test/sandbox.zsh clean            delete test VMs, keep the base ones
@@ -40,15 +41,18 @@ need_tart() { (( $+commands[tart] )) || die "Tart isn't installed; run: test/san
 
 vm_exists() { tart list -q 2>/dev/null | grep -qx -- $1 }
 
-# start <vm> [share-repo]: boots headless in the background and waits for SSH
+# start <vm> [share-repo] [window|vnc]: boots in the background and waits for SSH;
+# headless unless asked for a window or Screen Sharing
 start() {
-  local vm=$1 share=$2 ip i
+  local vm=$1 share=$2 view=$3 ip i
+  local -a args=(--no-graphics)
+  case $view in
+    window) args=() ;;
+    vnc)    args=(--vnc) ;;
+  esac
+  [[ -n $share ]] && args+=(--dir=repo:${ROOT}:ro)
   step "Booting $vm"
-  if [[ -n $share ]]; then
-    tart run --no-graphics --dir=repo:${ROOT}:ro $vm >/dev/null 2>&1 &!
-  else
-    tart run --no-graphics $vm >/dev/null 2>&1 &!
-  fi
+  tart run $args $vm >/dev/null 2>&1 &!
   ip=$(tart ip --wait 180 $vm) || die "$vm didn't get an IP address"
   for i in {1..60}; do
     nc -z -G 2 $ip 22 2>/dev/null && { sleep 2; print -r -- $ip; return 0 }
@@ -199,14 +203,29 @@ cmd_run() {
 }
 
 cmd_new() {
-  local base=$BASE_FRESH vm ip
-  [[ $1 == brew ]] && base=$BASE_BREW
+  local base=$BASE_FRESH view vm ip arg
+  for arg; do
+    case $arg in
+      fresh)    base=$BASE_FRESH ;;
+      brew)     base=$BASE_BREW ;;
+      --window) view=window ;;
+      --vnc)    view=vnc ;;
+      *) die "Unknown option '$arg'. Usage: new [fresh|brew] [--window|--vnc]" ;;
+    esac
+  done
   need_tart
+  vm_exists $base || die "$base is missing; run: test/sandbox.zsh setup"
   vm=sc-manual-$(date +%H%M%S)
   tart clone $base $vm || die "Couldn't clone $base"
-  ip=$(start $vm share) || exit 1
+  ip=$(start $vm share $view) || exit 1
   say "✓ $vm is running at $ip. The repo is shared at '$SHARE'."
-  say "  Log in: test/sandbox.zsh ssh $vm [admin|worker]"
+  case $view in
+    window) say "  Its screen is in a Tart window, logged in as admin. Closing the window stops it." ;;
+    vnc)    say "  Screen Sharing opens it; if it asks, sign in as admin, password admin." ;;
+  esac
+  say "  Copy this checkout in (in the VM, as admin): ditto '$SHARE' $GUEST_REPO"
+  say "  admin uses sudo without a password here; sudo rm /etc/sudoers.d/admin brings the prompt back"
+  say "  Log in: test/sandbox.zsh ssh $vm [admin|worker] (passwords: admin, worker)"
 }
 
 cmd_ssh() {
@@ -254,5 +273,5 @@ cmd_purge() {
 
 case $1 in
   setup|run|new|ssh|ls|clean|purge) cmd=$1; shift; cmd_$cmd "$@" ;;
-  *) sed -n '2,13s/^# \{0,1\}//p' $0; exit 2 ;;
+  *) sed -n '2,14s/^# \{0,1\}//p' $0; exit 2 ;;
 esac

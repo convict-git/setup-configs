@@ -386,7 +386,7 @@ The base image is about 25 GB.
 |---|---|
 | `test/sandbox.zsh setup` | Installs Tart (Homebrew) and builds two base VMs: `sc-golden-fresh` (clean macOS plus a standard, non-admin user `worker`) and `sc-golden-brew` (Command Line Tools plus a Homebrew owned by `admin`) |
 | `test/sandbox.zsh run <scenario>` | Clones a base VM, shares this repo into it, runs the installer there, and checks the result |
-| `test/sandbox.zsh new [base]` / `ssh <vm>` | A VM to poke at by hand |
+| `test/sandbox.zsh new [base] [--window\|--vnc]` / `ssh <vm>` | A VM to poke at by hand. `--window` shows its screen; `--vnc` opens it in Screen Sharing, where copy and paste work |
 | `test/sandbox.zsh ls` | VMs and their disk use |
 | `test/sandbox.zsh clean` | Deletes the test VMs, keeping the base ones |
 | `test/sandbox.zsh purge` | Deletes everything, including the base VMs and Tart's image cache, and offers to uninstall Tart |
@@ -394,6 +394,12 @@ The base image is about 25 GB.
 Scenarios: `fresh-sudo` (fresh Mac, sudo yes), `fresh-nosudo` (fresh Mac, standard
 user), `brew-other` (Homebrew owned by another user, no sudo) and `brew-own`
 (Homebrew owned by you, no sudo).
+
+To watch the installer yourself, run `test/sandbox.zsh new --window`. The VM logs in as
+`admin`; in its Terminal, `ditto '/Volumes/My Shared Files/repo' ~/convict/open-source/setup-configs`
+copies this checkout in, or the one-liner above installs what's pushed. The base VMs let
+`admin` use sudo without a password; `sudo rm /etc/sudoers.d/admin` brings the prompt
+back. The passwords are `admin` and `worker`.
 
 ## Manual steps
 
