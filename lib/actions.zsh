@@ -12,7 +12,9 @@ typeset -gA PLAN CASK_APPS
 plan_add() {
   local group=$1 text=$2 done=${3:-0} line
   (( ${PLAN_ORDER[(Ie)$group]} )) || PLAN_ORDER+=$group
-  if (( done )); then
+  if [[ $group == Cautions ]]; then
+    line="    $text"
+  elif (( done )); then
     line="    ${C[green]}✓${C[reset]} ${C[grey]}$text${C[reset]}"
   else
     line="    ${C[blue]}+${C[reset]} $text"
