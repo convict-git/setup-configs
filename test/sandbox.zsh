@@ -20,7 +20,7 @@ IMAGE=ghcr.io/cirruslabs/macos-tahoe-vanilla:latest
 BASE_FRESH=sc-golden-fresh   # clean macOS, admin (password admin) plus standard user worker
 BASE_BREW=sc-golden-brew     # plus the Command Line Tools and a Homebrew owned by admin
 KEY=$ROOT/test/.sandbox/id_ed25519
-SSH_OPTS=(-i $KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=10)
+SSH_OPTS=(-i $KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=10)
 GUEST_REPO='~/convict/open-source/setup-configs'
 SHARE='/Volumes/My Shared Files/repo'
 
@@ -83,7 +83,7 @@ install_key() {
   local ip=$1
   expect <<EOF >/dev/null
 set timeout 60
-spawn ssh-copy-id -i $KEY.pub -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null admin@$ip
+spawn ssh-copy-id -i $KEY.pub -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null admin@$ip
 expect {
   -re "assword:" { send "admin\r"; exp_continue }
   eof
@@ -180,7 +180,8 @@ cmd_run() {
   on $ip admin "for i in {1..30}; do [ -d '$SHARE' ] && break; sleep 2; done
     dest=/Users/$user/${GUEST_REPO#\~/}
     sudo mkdir -p \${dest%/*} && sudo ditto '$SHARE' \$dest && sudo rm -rf \${dest:?}/test/.sandbox &&
-    sudo chown -R ${user}:staff /Users/$user/${${GUEST_REPO#\~/}%%/*}" >/dev/null ||
+    sudo chown -R ${user}:staff /Users/$user/${${GUEST_REPO#\~/}%%/*}" &&
+    on $ip $user "test -r $GUEST_REPO/install.sh" ||
     die "Couldn't copy the repo"
   answers_for $sudo | ssh $SSH_OPTS $user@$ip "cat > /tmp/answers.env" || die "Couldn't write the answers"
 
