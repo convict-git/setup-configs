@@ -176,7 +176,9 @@ run_live_head() {
 }
 
 # Redraws the command and the last LIVE_ROWS lines (plus an unfinished one, such
-# as a prompt) over what was drawn before; every line fits one screen line
+# as a prompt) over what was drawn before; every line fits one screen line. Each
+# starts with \r: sudo puts the terminal in raw mode while its command runs, and
+# then a newline alone doesn't go back to the first column.
 run_live_draw() {
   local -a show
   local text
@@ -185,10 +187,10 @@ run_live_draw() {
   [[ -n ${partial##*$'\r'} ]] && show+=("${partial##*$'\r'}")
   (( drawn )) && print -rn -- $'\e['"${drawn}A"$'\r\e[J'
   run_live_head
-  print -r -- $REPLY
+  print -r -- $'\r'"$REPLY"
   for text in "${(@)show}"; do
     run_live_fit "$text" $(( COLS - 7 ))
-    print -r -- "    ${C[grey]}│ $REPLY${C[reset]}"
+    print -r -- $'\r'"    ${C[grey]}│ $REPLY${C[reset]}"
   done
   drawn=$(( 1 + $#show ))
 }
