@@ -5,6 +5,9 @@ installer that rebuilds it on a fresh Mac, with or without admin rights.
 
 Apple Silicon only, macOS 14 or newer.
 
+
+<img width="800" height="534" alt="download" src="https://github.com/user-attachments/assets/3457925e-8cfd-4469-9e5f-2fe4ab491752" />
+
 ## Quick start
 
 On a Mac without this repo (no git needed):
