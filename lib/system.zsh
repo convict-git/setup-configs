@@ -99,24 +99,35 @@ detect_all() {
   detect_management; detect_tls; detect_disk
 }
 
+# foundation_installs <clt|brew>: Foundation is to install it. The plan takes
+# that on trust; once applying, it counts only if Foundation finished, so the
+# intents that work without brew fall back instead of running a missing one.
+foundation_installs() {
+  [[ ${FOUNDATION[$1]} == install && ( $MODE == plan || ${STATE[foundation]} == done ) ]]
+}
+
 # Will the Command Line Tools be there for this run (now, or once Foundation installs them)?
 clt_usable() {
-  [[ -n ${SYS[clt]} || ${FOUNDATION[clt]} == install ]]
+  [[ -n ${SYS[clt]} ]] || foundation_installs clt
 }
 
 # Can brew be used for this run? It needs the Command Line Tools too.
 brew_usable() {
   clt_usable || return 1
   [[ -n ${SYS[brew]} ]] && (( SYS[brew_writable] )) && return 0
-  [[ -z ${SYS[brew]} && ${FOUNDATION[brew]} == install ]]
+  [[ -z ${SYS[brew]} ]] && foundation_installs brew
 }
 
 brew_why_not() {
   if ! clt_usable; then
-    (( USE_SUDO )) && print "the Command Line Tools won't be installed" ||
-      print "the Command Line Tools are missing and sudo is off"
+    if [[ ${FOUNDATION[clt]} == install ]]; then print "the Command Line Tools didn't install"
+    elif (( USE_SUDO )); then print "the Command Line Tools won't be installed"
+    else print "the Command Line Tools are missing and sudo is off"
+    fi
   elif [[ -n ${SYS[brew]} ]]; then
     print "Homebrew isn't writable by you"
+  elif [[ ${FOUNDATION[brew]} == install ]]; then
+    print "Homebrew didn't install"
   elif (( USE_SUDO )); then
     print "Homebrew won't be installed"
   else
