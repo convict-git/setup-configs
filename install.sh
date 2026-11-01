@@ -103,15 +103,20 @@ convert_to_clone() {
   [[ -d $ROOT/.git || ! -f $ROOT/.setup-configs-source ]] && return 0
   detect_git
   [[ -n ${SYS[git]} ]] || return 0
-  local ref=$(<$ROOT/.setup-configs-source)
+  # The branch, then the commit bootstrap.sh downloaded (older downloads have no commit)
+  local src=("${(@f)$(<$ROOT/.setup-configs-source)}") git=${SYS[git]} at
+  local ref=$src[1] commit=$src[2]
   heading "Repository"
-  step "Turning $(tildify $ROOT) into a git clone of $ref"
+  step "Turning $(tildify $ROOT) into a git clone of $ref${commit:+ at ${commit[1,7]}}"
   MODE=apply
-  run ${SYS[git]} -C $ROOT init -q -b $ref &&
-    run ${SYS[git]} -C $ROOT remote add origin $REPO_URL &&
-    run ${SYS[git]} -C $ROOT fetch -q origin $ref &&
-    run ${SYS[git]} -C $ROOT reset -q origin/$ref &&
-    run ${SYS[git]} -C $ROOT branch -q -u origin/$ref &&
+  run $git -C $ROOT init -q -b $ref &&
+    run $git -C $ROOT remote add origin $REPO_URL &&
+    run $git -C $ROOT fetch -q origin $ref &&
+    { # The files are that commit's; if the branch was rewritten since, its tip is the closest
+      at=origin/$ref
+      [[ -n $commit ]] && $git -C $ROOT cat-file -e "$commit^{commit}" 2>/dev/null && at=$commit
+      run $git -C $ROOT reset -q $at } &&
+    run $git -C $ROOT branch -q -u origin/$ref &&
     run rm $ROOT/.setup-configs-source ||
     caution "Couldn't turn $(tildify $ROOT) into a git clone; the files are fine"
 }
