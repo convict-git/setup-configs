@@ -9,6 +9,8 @@ scenario=$1
 ROOT=${0:A:h:h}
 B=/opt/homebrew
 failures=0
+# What a new shell from ~/.zshrc would have; SSH commands start with less
+path=($HOME/.local/bin $B/bin $B/opt/rustup/bin $path)
 
 pass() { print -r -- "  ✓ $1" }
 check() {  # check <description> <command...>
