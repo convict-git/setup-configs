@@ -1,6 +1,6 @@
 id=iterm2
 title="iTerm2"
-why="iTerm2, loading its settings from (and saving them back to) the repo's iterm2/ folder."
+why="iTerm2, loading its settings from (and saving them back to) the repo's iterm2/ folder. They let programs in the terminal set the clipboard, so Neovim over SSH can copy to this Mac."
 works_best_with=(deimos-font)
 packages=(
   "cask iterm2 (skipped when iTerm2 is already installed)"

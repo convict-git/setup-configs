@@ -315,7 +315,7 @@ Downloads from: `static.rust-lang.org`, `formulae.brew.sh`, `ghcr.io`, `pkg-cont
 
 ### iTerm2
 
-iTerm2, loading its settings from (and saving them back to) the repo's iterm2/ folder.
+iTerm2, loading its settings from (and saving them back to) the repo's iterm2/ folder. They let programs in the terminal set the clipboard, so Neovim over SSH can copy to this Mac.
 
 **Works best with:** Deimos font
 
@@ -415,4 +415,9 @@ back. The passwords are `admin` and `worker`.
 - **iTerm2** must be closed when the installer points it at `iterm2/`; otherwise it
   would save its current settings over the repo's when it quits. The installer says so
   and leaves it alone.
+- **iTerm2's clipboard access** is on in `iterm2/`: programs in the terminal can replace
+  your clipboard with an escape sequence (OSC 52) without asking. That's how Neovim over
+  SSH copies to this Mac, but anything printed in the terminal can do it, including an
+  untrusted file you `cat`. To turn it off: iTerm2 → Settings → General → Selection →
+  "Applications in terminal may access clipboard".
 - Work-specific settings (git `includeIf`, project eslint rules) aren't in this repo.
