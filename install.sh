@@ -17,20 +17,31 @@ setopt extended_glob
 ROOT=${0:A:h}
 for lib in ui system actions gitconfig intents docs; do source $ROOT/lib/$lib.zsh; done
 
-ACTION=setup DOCS_MODE='' DRY_RUN=0 NONINTERACTIVE=0 ANSWERS_IN=''
+ACTION=setup DOCS_MODE='' DOCS=0 CHECK=0 REFRESH=0 DRY_RUN=0 NONINTERACTIVE=0 ANSWERS_IN=''
 while (( $# )); do
   case $1 in
-    --check)   [[ $ACTION == docs ]] && DOCS_MODE=check || ACTION=check ;;
+    --check)   CHECK=1 ;;
     --dry-run) DRY_RUN=1 ;;
     --unlink)  ACTION=unlink ;;
     --answers) ANSWERS_IN=${2:?--answers needs a file}; NONINTERACTIVE=1; shift ;;
-    --docs)    ACTION=docs ;;
-    --refresh) DOCS_MODE=refresh ;;
+    --docs)    DOCS=1 ;;
+    --refresh) REFRESH=1 ;;
     -h|--help) sed -n '2,13s/^# \{0,1\}//p' $0; exit 0 ;;
     *) print -u2 "Unknown option: $1 (see --help)"; exit 2 ;;
   esac
   shift
 done
+# Decided after the loop, so --check means the same wherever it comes
+if (( DOCS )); then
+  ACTION=docs
+  (( CHECK && REFRESH )) && { print -ru2 -- "--docs takes --check or --refresh, not both (see --help)"; exit 2 }
+  (( CHECK )) && DOCS_MODE=check
+  (( REFRESH )) && DOCS_MODE=refresh
+elif (( REFRESH )); then
+  print -ru2 -- "--refresh only goes with --docs (see --help)"; exit 2
+elif (( CHECK )); then
+  ACTION=check
+fi
 
 if (( EUID == 0 )); then
   print -u2 "Run this as yourself, not with sudo. It asks before using sudo."
