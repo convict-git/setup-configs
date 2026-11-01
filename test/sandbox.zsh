@@ -57,9 +57,19 @@ start() {
   die "$vm didn't open SSH"
 }
 
+vm_state() { tart list --source local 2>/dev/null | awk -v n=$1 '$2 == n { print $NF }' }
+
+# stop <vm> <ip>: shuts the guest down from inside, so everything it wrote
+# reaches its disk (tart stop alone can cut off the last minutes of writes)
 stop() {
-  step "Shutting down $1"
-  tart stop $1 >/dev/null 2>&1
+  local vm=$1 ip=$2 i
+  step "Shutting down $vm"
+  ssh $SSH_OPTS admin@$ip 'sync; sudo shutdown -h now' >/dev/null 2>&1
+  for i in {1..60}; do
+    [[ $(vm_state $vm) == stopped ]] && return 0
+    sleep 2
+  done
+  tart stop $vm >/dev/null 2>&1
 }
 
 # on <ip> <user> <command>: runs a command in the guest over SSH, with a terminal
@@ -112,7 +122,7 @@ cmd_setup() {
       (dseditgroup -o read com.apple.access_ssh >/dev/null 2>&1 && sudo dseditgroup -o edit -a worker -t user com.apple.access_ssh || true)" ||
       die "Couldn't prepare $BASE_FRESH"
     on $ip worker true || die "worker can't log in over SSH"
-    stop $BASE_FRESH-wip
+    stop $BASE_FRESH-wip $ip
     tart rename $BASE_FRESH-wip $BASE_FRESH
   fi
 
@@ -126,9 +136,10 @@ cmd_setup() {
       label=$(softwareupdate -l 2>/dev/null | sed -n "s/^.*\* Label: \(Command Line Tools.*\)$/\1/p" | sort -V | tail -1) &&
       sudo softwareupdate --install "$label" &&
       rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress &&
-      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' ||
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" &&
+      /opt/homebrew/bin/brew --version' ||
       die "Couldn't install the Command Line Tools and Homebrew in $BASE_BREW"
-    stop $BASE_BREW-wip
+    stop $BASE_BREW-wip $ip
     tart rename $BASE_BREW-wip $BASE_BREW
   fi
   say "✓ Base VMs ready: $BASE_FRESH, $BASE_BREW"
@@ -164,8 +175,12 @@ cmd_run() {
   tart clone $base $vm || die "Couldn't clone $base"
   ip=$(start $vm share) || exit 1
 
+  # The share is mounted for admin (the logged-in user) only, so admin copies it
   step "Copying this repo (with uncommitted changes) into $user's home"
-  on $ip $user "mkdir -p ~/convict/open-source && ditto '$SHARE' $GUEST_REPO && rm -rf $GUEST_REPO/test/.sandbox" >/dev/null ||
+  on $ip admin "for i in {1..30}; do [ -d '$SHARE' ] && break; sleep 2; done
+    dest=/Users/$user/${GUEST_REPO#\~/}
+    sudo mkdir -p \${dest%/*} && sudo ditto '$SHARE' \$dest && sudo rm -rf \${dest:?}/test/.sandbox &&
+    sudo chown -R $user:staff /Users/$user/${${GUEST_REPO#\~/}%%/*}" >/dev/null ||
     die "Couldn't copy the repo"
   answers_for $sudo | ssh $SSH_OPTS $user@$ip "cat > /tmp/answers.env" || die "Couldn't write the answers"
 
