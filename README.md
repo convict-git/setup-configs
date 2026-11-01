@@ -371,7 +371,8 @@ formulae come from `formulae.brew.sh` (metadata) and `ghcr.io` (bottles).
 - **Safe to re-run.** Anything already in place shows as done, and nothing installed is
   upgraded (`HOMEBREW_NO_AUTO_UPDATE`, `HOMEBREW_NO_INSTALL_UPGRADE`).
 - **Answers** are saved to `~/.config/setup-configs/answers.env` and become the defaults
-  next time. Pass a copy to `--answers` to run without questions.
+  next time. Pass a copy to `--answers` to run without questions. Your git name and email
+  come from `~/.gitconfig` when it has them; the saved ones only fill in what it lacks.
 - **Backups** of replaced files go to `~/.setup-configs-backup/<time>/`. Before iTerm2 is
   pointed at `iterm2/`, its current settings are exported there as
   `com.googlecode.iterm2.plist`.

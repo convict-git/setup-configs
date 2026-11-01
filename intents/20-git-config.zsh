@@ -7,7 +7,10 @@ packages=(
 )
 
 ask() {
-  local name=${ANS[git_name]:-$(gitconfig_get user.name)} email=${ANS[git_email]:-$(gitconfig_get user.email)}
+  # What ~/.gitconfig has now wins; saved answers only fill in what it lacks, so
+  # a rerun doesn't undo a later git config --global change
+  local name=$(gitconfig_get user.name) email=$(gitconfig_get user.email)
+  name=${name:-${ANS[git_name]}} email=${email:-${ANS[git_email]}}
   if (( ! NONINTERACTIVE )); then
     ask_text name "Your name for git commits" $name
     ask_text email "Your email for git commits" $email
