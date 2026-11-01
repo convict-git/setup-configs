@@ -73,14 +73,14 @@ choose_intent() {
       STATE[$id]=unavailable
       [[ ${STATE[$dep]} == declined ]] && REASON[$id]="needs ${I_TITLE[$dep]}, which you declined" ||
         REASON[$id]="needs ${I_TITLE[$dep]}, which isn't available"
-      fail "Skipped: ${REASON[$id]}"
+      info "Skipped: ${REASON[$id]}"
       return
     fi
   done
   WHY_NOT=''
   if (( $+functions[available:$id] )) && ! available:$id; then
     STATE[$id]=unavailable REASON[$id]=$WHY_NOT
-    fail "Skipped: ${REASON[$id]}"
+    info "Skipped: ${REASON[$id]}"
     return
   fi
 
@@ -176,7 +176,7 @@ apply_all() {
     heading "${I_TITLE[$id]}"
     if [[ -n $failed_dep ]]; then
       STATE[$id]=skipped REASON[$id]="${I_TITLE[$failed_dep]} didn't finish"
-      fail "Skipped: ${REASON[$id]}"
+      warn "Skipped: ${REASON[$id]}"
       continue
     fi
     if apply:$id; then
