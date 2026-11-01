@@ -180,7 +180,7 @@ cmd_run() {
   on $ip admin "for i in {1..30}; do [ -d '$SHARE' ] && break; sleep 2; done
     dest=/Users/$user/${GUEST_REPO#\~/}
     sudo mkdir -p \${dest%/*} && sudo ditto '$SHARE' \$dest && sudo rm -rf \${dest:?}/test/.sandbox &&
-    sudo chown -R $user:staff /Users/$user/${${GUEST_REPO#\~/}%%/*}" >/dev/null ||
+    sudo chown -R ${user}:staff /Users/$user/${${GUEST_REPO#\~/}%%/*}" >/dev/null ||
     die "Couldn't copy the repo"
   answers_for $sudo | ssh $SSH_OPTS $user@$ip "cat > /tmp/answers.env" || die "Couldn't write the answers"
 
