@@ -120,6 +120,20 @@ link() {
   run ln -s $src $dest
 }
 
+# link_dev_tool <name>: links scripts/xcrun-tool as ~/.local/bin/<name>, but only
+# when the developer tools have that binary; otherwise the link would make Neovim
+# think the tool exists. xcrun is asked only once the Command Line Tools are here
+# (before that it's a stub that offers to install them), so the plan assumes the
+# ones Foundation installs have it.
+link_dev_tool() {
+  local name=$1
+  if [[ -n ${SYS[clt]} ]] && ! PATH=/usr/bin:/bin xcrun --no-cache --find $name >/dev/null 2>&1; then
+    caution "the developer tools have no $name; update the Command Line Tools and run install.sh again"
+    return 0
+  fi
+  link scripts/xcrun-tool $HOME/.local/bin/$name
+}
+
 # copy_file <repo-relative source> <destination>: copies when missing or different
 copy_file() {
   local src=$ROOT/$1 dest=$2 same=0

@@ -16,7 +16,7 @@ apply() {
   local toolchains=($HOME/.rustup/toolchains/stable-*(N/)) done=0
   (( $#toolchains )) && [[ -e $toolchains[1]/bin/rust-analyzer ]] && done=1
   task "rustup" "Install the stable Rust toolchain with rust-analyzer" $done rust_install_stable || return 1
-  link scripts/xcrun-tool $HOME/.local/bin/lldb-dap
+  link_dev_tool lldb-dap
 }
 
 rust_install_stable() {

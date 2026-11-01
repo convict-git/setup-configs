@@ -2,4 +2,7 @@
 # Runs the Command Line Tools binary this link is named after (clang-format,
 # lldb-dap), which macOS doesn't put on PATH itself. install.sh links it into
 # ~/.local/bin under each of those names.
-exec xcrun "$(basename "$0")" "$@"
+# The lookup uses a minimal PATH and skips xcrun's cache: when the developer
+# tools lack the binary, xcrun falls back to PATH and would find this link again.
+tool=$(PATH=/usr/bin:/bin xcrun --no-cache --find "$(basename "$0")") || exit
+exec "$tool" "$@"
