@@ -44,7 +44,7 @@ A run goes like this. Nothing changes before step 5.
 | `--check` | Only the pre-check |
 | `--dry-run` | Ask, show the plan and every command it would run, change nothing |
 | `--answers FILE` | No questions: take the answers from `FILE` (same format as `~/.config/setup-configs/answers.env`) |
-| `--unlink` | Remove the links and git includes it made, point iTerm2 back at its own settings, and offer to restore the last backup. Installed packages stay. |
+| `--unlink` | Remove the links and git includes it made, point iTerm2 back at its own settings (offering to import the ones it had before), and offer to restore the last backup. Installed packages stay. |
 | `--docs` | Regenerate this README's intent and host sections from `intents/` (`--docs --check` fails if they're stale; `--docs --refresh` also re-reads brew dependencies and plugin URLs) |
 
 ## With or without sudo
@@ -372,9 +372,12 @@ formulae come from `formulae.brew.sh` (metadata) and `ghcr.io` (bottles).
   upgraded (`HOMEBREW_NO_AUTO_UPDATE`, `HOMEBREW_NO_INSTALL_UPGRADE`).
 - **Answers** are saved to `~/.config/setup-configs/answers.env` and become the defaults
   next time. Pass a copy to `--answers` to run without questions.
-- **Backups** of replaced files go to `~/.setup-configs-backup/<time>/`.
+- **Backups** of replaced files go to `~/.setup-configs-backup/<time>/`. Before iTerm2 is
+  pointed at `iterm2/`, its current settings are exported there as
+  `com.googlecode.iterm2.plist`.
 - **Logs** of every run go to `~/.local/state/setup-configs/<time>.log`.
-- **Undo** with `install.sh --unlink`.
+- **Undo** with `install.sh --unlink`. It also offers to import iTerm2's earlier settings
+  (iTerm2 must be closed for that).
 
 ## Testing in a VM
 

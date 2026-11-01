@@ -30,7 +30,17 @@ apply() {
     caution "iTerm2 is open, so its settings folder isn't changed. Quit iTerm2 and run ./install.sh again from Terminal."
     return 0
   fi
+  # iTerm2 copies the repo's settings over its own when it next starts, so its
+  # own are exported first; --unlink offers to import them again
+  if (( ! done )) && defaults read com.googlecode.iterm2 >/dev/null 2>&1; then
+    task "iTerm2" "Save iTerm2's current settings to $(tildify $BACKUP_DIR)" 0 iterm_export_prefs || return 1
+  fi
   task "iTerm2" "Load iTerm2's settings from $(tildify $folder)" $done iterm_use_repo_folder
+}
+
+iterm_export_prefs() {
+  run mkdir -p $BACKUP_DIR &&
+    run defaults export com.googlecode.iterm2 $BACKUP_DIR/com.googlecode.iterm2.plist
 }
 
 iterm_use_repo_folder() {

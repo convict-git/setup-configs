@@ -117,7 +117,7 @@ convert_to_clone() {
 }
 
 unlink_all() {
-  local target id answer latest file
+  local target id answer latest file prefs
   heading "Undo links"
   detail "Removes links into this repo and the git includes. Installed packages stay."
   if (( ! NONINTERACTIVE )) && ! ask_yn "Continue?" n; then return 0; fi
@@ -134,7 +134,17 @@ unlink_all() {
     step "Pointing iTerm2 back at its own settings"
     run defaults delete com.googlecode.iterm2 PrefsCustomFolder
     run defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool false
-    pgrep -xq iTerm2 && warn "Quit iTerm2 and open it again to use its own settings"
+    # The settings it had before install.sh pointed it at the repo. Not in
+    # .manifest: preferences go back through defaults, not mv.
+    prefs=($HOME/.setup-configs-backup/*/com.googlecode.iterm2.plist(N.om[1]))
+    if pgrep -xq iTerm2; then
+      warn "Quit iTerm2 and open it again to use its own settings"
+      (( $#prefs )) && detail "To get back the settings it had before, quit it first and run: defaults import com.googlecode.iterm2 $(tildify $prefs)"
+    elif (( $#prefs )) && { (( NONINTERACTIVE )) || ask_yn "Bring back iTerm2's settings from before ($(tildify $prefs))?" y }; then
+      # import merges, so the repo's settings are cleared first
+      step "Importing iTerm2's earlier settings"
+      run defaults delete com.googlecode.iterm2 && run defaults import com.googlecode.iterm2 $prefs
+    fi
   fi
   latest=($HOME/.setup-configs-backup/*/.manifest(N.om[1]))
   if (( $#latest )) && { (( NONINTERACTIVE )) || ask_yn "Restore files from the last backup ($(tildify ${latest:h}))?" y }; then
