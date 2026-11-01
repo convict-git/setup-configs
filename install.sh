@@ -59,7 +59,7 @@ load_answers() {
   local file=$1 key value
   [[ -f $file ]] || return 0
   while IFS='=' read -r key value; do
-    [[ $key == [a-z_]## ]] && ANS[$key]=${(Q)value}
+    [[ $key == [a-z0-9_]## ]] && ANS[$key]=${(Q)value}
   done < $file
 }
 
