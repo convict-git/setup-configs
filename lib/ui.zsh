@@ -201,7 +201,8 @@ run_live_fit() {
   local text=${1//$'\t'/  } max=$2
   (( max < 10 )) && max=10
   text=${(S)text//$'\e'\[[0-9;?]#[@-~]}
-  text=${text//[$'\x01'-$'\x1f']}
+  # Control characters, the 8-bit ones too: some terminals act on those (one moves the cursor up)
+  text=${text//[$'\x01'-$'\x1f'$'\u0080'-$'\u009f']}
   if (( ${(m)#text} > max )); then
     text=${text[1,max-1]}
     while (( ${(m)#text} > max - 1 )); do text=${text[1,-2]}; done
