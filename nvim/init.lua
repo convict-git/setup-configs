@@ -57,8 +57,10 @@ vim.cmd("syntax on") -- Enable syntax highlighting (again, for good measure)
 require('plugins/bigfile')
 
 -- ***************************************************************************
-local cwd = vim.fn.getcwd()
-local is_java_project = vim.fn.getcwd():match("sprinklr.app/?$") ~= nil
+-- Plugins that only serve an optional install.sh intent (yazi, C/C++, debugging)
+-- are enabled only when that intent's tool is on PATH, so lazy.nvim never
+-- downloads them on machines without it.
+local function has(cmd) return vim.fn.executable(cmd) == 1 end
 
 -- ***************************************************************************
 -- Lazy.nvim bootstrap
@@ -81,7 +83,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   { 'tpope/vim-fugitive' },
   -- { 'rust-lang/rust.vim' }, // ToDo
-  { 'rhysd/vim-clang-format' },
+  { 'rhysd/vim-clang-format', enabled = has('clang-format') },
   -- Removed 'octol/vim-cpp-enhanced-highlight': redundant regex C/C++ highlighting,
   -- superseded by the treesitter `cpp` parser (and slow on large C/C++ files).
   {
@@ -133,7 +135,7 @@ require("lazy").setup({
    lazy = false,
    priority = 1000, -- load (and apply the colorscheme) before lualine/bufferline read colors
    config = function()
-     vim.cmd.colorscheme("nordfox")
+     vim.cmd.colorscheme("dayfox")
    end,
  },
  {
@@ -280,48 +282,15 @@ require("lazy").setup({
     end
   },
 
-  -- === Tree view ===
-  {
-    'nvim-tree/nvim-tree.lua',
-    init = function()
-      vim.g.loaded_netrw = 1
-      vim.g.loaded_netrwPlugin = 1
-      -- optionally enable 24-bit colour
-      vim.opt.termguicolors = true
-    end,
-    cond = false, -- disable for now
-    config = function()
-      require("nvim-tree").setup({
-        sort = {
-          sorter = "case_sensitive",
-        },
-        view = {
-          width = 30,
-        },
-        renderer = {
-          group_empty = true,
-        },
-        filters = {
-          dotfiles = true,
-        },
-      })
-    end,
-  },
   -- === CoC ===
   {
     "neoclide/coc.nvim",
     branch = "release",
     -- build = "npm ci",
-    cond = function()
-      return not is_java_project -- Don't load coc for java projects, we will use some other plugins
-    end,
     config = function()
       require('plugins/coc-config')
     end,
   },
-
-  -- === Avante ===
-  require('plugins/avante-config').get_avante_lazy_config(false),
 
   -- === Telescope and Extensions ===
   { "nvim-lua/plenary.nvim" },
@@ -341,7 +310,8 @@ require("lazy").setup({
   },
   {
     "nvim-telescope/telescope-fzf-native.nvim",
-    build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release",
+    -- The plugin's CMakeLists asks for cmake 3.2, which cmake 4 refuses without a policy floor
+    build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 && cmake --build build --config Release",
   },
   { "nvim-telescope/telescope-frecency.nvim" },
   { "nvim-telescope/telescope-file-browser.nvim" },
@@ -397,9 +367,13 @@ require("lazy").setup({
     end,
   },
 
+  -- snacks.nvim also backs <leader>gb (gitbrowse), so it stays even without yazi
+  { "folke/snacks.nvim" },
+
   -- === Yazi (file-manager) ===
   {
     "mikavilpas/yazi.nvim",
+    enabled = has('yazi'),
     event = "VeryLazy",
     dependencies = {
       -- check the installation instructions at
@@ -427,6 +401,17 @@ require("lazy").setup({
     end,
     config = function()
       local yazi = require('yazi')
+
+      -- Force-closing the yazi window (nvim_win_close / :close) only hides its terminal buffer
+      -- (bufhidden=hide): yazi and its `ya sub` listener keep running, so the buffer hover
+      -- highlight is never reset and every leaked listener re-fires our DDS events. Instead ask
+      -- yazi to quit and run the follow-up action once yazi.nvim has finished its exit handling.
+      local after_yazi_quit
+      local function quit_yazi_then(yazi_id, action)
+        after_yazi_quit = action
+        vim.system({ "ya", "emit-to", yazi_id, "quit" })
+      end
+
       yazi.setup({
         -- if you want to open yazi instead of netrw
         open_for_directories = true,
@@ -434,28 +419,30 @@ require("lazy").setup({
         keymaps = {
           show_help = "<f1>",
         },
+        hooks = {
+          -- Drop an action left over from a quit that never completed (e.g. cancelled confirm)
+          yazi_opened = function() after_yazi_quit = nil end,
+          yazi_closed_successfully = function()
+            local action = after_yazi_quit
+            after_yazi_quit = nil
+            if action then vim.schedule(action) end
+          end,
+        },
          set_keymappings_function = function(yazi_buffer, config, context)
             -- Adding custom mapping: <leader>ro => Open all files recursively from hovered directory
             vim.keymap.set({ "t" }, "<leader>ro", function()
-              local hovered_url = context.ya_process.hovered_url
-              local cwd = vim.fn.getcwd()
-              local rel_path = vim.fn.fnamemodify(hovered_url, ":." )  -- relative to cwd
-
-              vim.cmd("close") -- Yazi creates an autocmd for WinLeave where it clears the window
-
-              vim.defer_fn(function()
-                  vim.cmd("OpenAllFilesRecursive " .. rel_path)
-              end, 10)
+              local rel_path = vim.fn.fnamemodify(context.ya_process.hovered_url, ":.")  -- relative to cwd
+              quit_yazi_then(context.ya_process.yazi_id, function()
+                vim.cmd("OpenAllFilesRecursive " .. rel_path)
+              end)
             end, { buffer = yazi_buffer, desc = "Recursively open files from hovered dir" })
 
             -- New mapping for quickfix
             vim.keymap.set({ "t" }, "<leader>rq", function()
-              local hovered_url = context.ya_process.hovered_url
-              local rel_path = vim.fn.fnamemodify(hovered_url, ":.")
-              vim.cmd("close")
-              vim.defer_fn(function()
+              local rel_path = vim.fn.fnamemodify(context.ya_process.hovered_url, ":.")
+              quit_yazi_then(context.ya_process.yazi_id, function()
                 vim.cmd("QuickfixAllFilesRecursive " .. rel_path)
-              end, 10)
+              end)
             end, { buffer = yazi_buffer, desc = "Recursively add files from hovered dir to quickfix" })
           end,
         -- Sent by yazi's `s` / `S` keymaps; bound in yazi rather than as terminal maps so typing in prompts isn't hijacked
@@ -468,38 +455,24 @@ require("lazy").setup({
         callback = function(event)
           local picker = telescope_pickers[event.data.type]
           if not picker then return end
-          local cwd = vim.json.decode(event.data.raw_data)
-
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "yazi" then
-              vim.api.nvim_win_close(win, true)
-            end
-          end
-
-          vim.defer_fn(function()
+          -- Payload is [YAZI_ID, cwd] (see yazi/keymap.toml)
+          local yazi_id, cwd = unpack(vim.json.decode(event.data.raw_data))
+          quit_yazi_then(yazi_id, function()
             require("telescope.builtin")[picker]({ cwd = cwd })
-          end, 10)
+          end)
         end,
       })
     end,
   },
 
-  -- -- === nvim-java === wait for some time
-  -- {
-  --   "nvim-java/nvim-java",
-  --   dependencies = {
-  --     "neovim/nvim-lspconfig",
-  --   }
-  -- },
-
   -- === Treesitter ===
   {
     "nvim-treesitter/nvim-treesitter",
+    -- The default branch is now `main`, a rewrite without nvim-treesitter.configs
+    -- (see lua/plugins/treesitter.lua); stay on the archived master branch
+    branch = "master",
     build = ":TSUpdate",
   },
-
-  -- === Mason ===
-  require('plugins/lsp-java-config').get(not is_java_project),
 
   -- === Dropbar ===
   { "Bekaboo/dropbar.nvim",
@@ -528,13 +501,15 @@ require("lazy").setup({
   -- The whole DAP stack loads lazily on the first breakpoint keymap. nvim-dap,
   -- nvim-nio and nvim-dap-virtual-text are pulled in as dependencies of dap-ui.
   { "mfussenegger/nvim-dap",
+    enabled = has('lldb-dap'),
     lazy = true,
     config = function()
       require('plugins/dap')
     end
   },
-  { "nvim-neotest/nvim-nio", lazy = true },
+  { "nvim-neotest/nvim-nio", enabled = has('lldb-dap'), lazy = true },
   { "rcarriga/nvim-dap-ui",
+    enabled = has('lldb-dap'),
     keys = {
       { "<Leader>br", desc = "Toggle Breakpoint" },
       { "<Leader>db", desc = "Close Dap UI" },
@@ -568,6 +543,7 @@ require("lazy").setup({
     end,
   },
   { "theHamsta/nvim-dap-virtual-text",
+    enabled = has('lldb-dap'),
     lazy = true,
     config = function()
       require("nvim-dap-virtual-text").setup()
@@ -584,9 +560,6 @@ require("lazy").setup({
     end,
   },
 
-
-  -- === Sprinklr Supercharged (scanProject / references / traceImports) ===
-  require("plugins/spr-supercharged"),
 
   -- === text-case ===
   {
@@ -946,15 +919,29 @@ local function set_custom_highlights()
   -- vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#ffb3b3' })
   -- vim.api.nvim_set_hl(0, 'DiffText',   { bg = '#ffeaa7' })
 
-  vim.api.nvim_set_hl(0, '@operator', { bold = true })
-  vim.api.nvim_set_hl(0, '@punctuation', { bold = true })
-  vim.api.nvim_set_hl(0, '@punctuation.bracket', { bold = true })
-  vim.api.nvim_set_hl(0, '@keyword', { bold = true })
-  vim.api.nvim_set_hl(0, '@type', { italic = true, bold = true })
-  vim.api.nvim_set_hl(0, 'Number', { bold = true })
+  -- nvim_set_hl replaces a group outright, so `{ bold = true }` alone would drop the
+  -- theme's fg and leave the code colorless. Layer the style over the theme's
+  -- definition instead, walking up the capture chain (@function.call.tsx ->
+  -- @function.call -> ...) for groups the theme doesn't define itself.
+  local function add_style(group, style)
+    local base, name = {}, group
+    while name do
+      base = vim.api.nvim_get_hl(0, { name = name, link = false })
+      if next(base) then break end
+      name = name:match('^(.+)%.[^.]+$')
+    end
+    vim.api.nvim_set_hl(0, group, vim.tbl_extend('force', base, style))
+  end
+
+  add_style('@operator', { bold = true })
+  add_style('@punctuation', { bold = true })
+  add_style('@punctuation.bracket', { bold = true })
+  add_style('@keyword', { bold = true })
+  add_style('@type', { italic = true, bold = true })
+  add_style('Number', { bold = true })
 
   -- typescript
-  vim.api.nvim_set_hl(0, '@function.call.tsx', { bold = true })
+  add_style('@function.call.tsx', { bold = true })
 
   -- Diagnostics: straight underline instead of the colorscheme's default
   -- squiggly undercurl, keeping whatever color the theme assigned.
@@ -983,7 +970,7 @@ set_custom_highlights()
 -- the tint readable across colorscheme switches. See lua/plugins/line-highlight.lua
 require('plugins/line-highlight').setup({
   -- Only these file extensions (case-insensitive); leave out for all files.
-  extensions = { 'lua', 'js', 'jsx', 'ts', 'tsx', 'java', 'md' },
+  extensions = { 'lua', 'js', 'jsx', 'ts', 'tsx', 'md' },
   rules = {
     { text = 'todo convict', hl = 'DiffText' },
     { text = 'FIXME', hl = 'DiffDelete' },

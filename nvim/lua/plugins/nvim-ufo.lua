@@ -15,7 +15,6 @@ local ts_fold_filetypes = {
   typescript = true,
   typescriptreact = true,
   tsx = true,
-  java = true,
   markdown = true,
 }
 

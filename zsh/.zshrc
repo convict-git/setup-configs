@@ -1,16 +1,20 @@
  # zmodload zsh/zprof #  keep at end for perf stats  # zprof
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-# fi
+# Linked to ~/.zshrc by install.sh (zsh intent). Each tool-specific block checks
+# that its tool is installed, so this loads cleanly whichever intents were chosen.
 
+# Homebrew: puts /opt/homebrew/bin on PATH and sets HOMEBREW_PREFIX
+[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
-
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:"/Applications/IntelliJ\ IDEA.app/Contents/MacOS":$PATH
+# ~/.local/bin holds fd-cache, missing-changes, tsgo and the clang-format/lldb-dap
+# links; Homebrew's rustup is keg-only, so its proxies (cargo, rustc) need adding
+path=(
+  $HOME/.local/bin
+  ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/rustup/bin}
+  $HOME/.cargo/bin
+  $path
+)
+typeset -U path
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -20,7 +24,6 @@ export ZSH="$HOME/.oh-my-zsh"
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="cypher"
-# ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -35,8 +38,8 @@ ZSH_THEME="cypher"
 # Case-sensitive completion must be off. _ and - will be interchangeable.
 # HYPHEN_INSENSITIVE="true"
 
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
+# install.sh pins oh-my-zsh to a tested commit, so it never updates itself
+zstyle ':omz:update' mode disabled  # disable automatic updates
 # zstyle ':omz:update' mode auto      # update automatically without asking
 # zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 
@@ -86,13 +89,21 @@ plugins=(
    # git
    # git-prompt
    npm # you added this
-   zsh-autosuggestions
-   zsh-syntax-highlighting
-   zsh-vi-mode
-   zsh-history-substring-search
 )
 
-source $ZSH/oh-my-zsh.sh
+[[ -r $ZSH/oh-my-zsh.sh ]] && source $ZSH/oh-my-zsh.sh
+
+# The other plugins come from Homebrew. Same order as when they were oh-my-zsh
+# plugins: history-substring-search must follow syntax-highlighting
+for plugin in \
+  share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  opt/zsh-vi-mode/share/zsh-vi-mode/zsh-vi-mode.plugin.zsh \
+  share/zsh-history-substring-search/zsh-history-substring-search.zsh
+do
+  [[ -n $HOMEBREW_PREFIX && -r $HOMEBREW_PREFIX/$plugin ]] && source $HOMEBREW_PREFIX/$plugin
+done
+unset plugin
 
 # User configuration
 
@@ -119,22 +130,6 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias vim=/usr/local/bin/vim
-IDEA_PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS/idea"
-alias idea="'$IDEA_PATH'"
-export JAVA_HOME="$HOME/Library/Java/JavaVirtualMachines/corretto-21.0.5/Contents/Home"
-# export JAVA_HOME="$HOME/.config/coc/extensions/coc-java-data/jdk-23.0.2-darwin-arm64" ## Was trying this when using coc-java
-# export JAVA_HOME="/opt/homebrew/Cellar/openjdk/22.0.2/libexec/openjdk.jdk/Contents/Home"
-export GRADLE_HOME="$HOME/.gradle/wrapper/dists/gradle-8.6-bin/afr5mpiioh2wthjmwnkmdsd5w/gradle-8.6/bin"
-export GRADLE_USER_HOME="$HOME/.gradle/wrapper/dists/gradle-8.6-bin/afr5mpiioh2wthjmwnkmdsd5w/gradle-8.6/bin" # Not sure about it rn
-export PYENV_ROOT="$HOME/.pyenv"
-export VIFM="$HOME/.config/vifm"
-export MYVIFMRC="$VIFM/vifmrc"
-export LLVM_PATH="/opt/homebrew/opt/llvm/bin"
-export OPEN_JDK_PATH="/opt/homebrew/opt/openjdk/bin"
-export HOMEBREW_PATH="/opt/homebrew/bin"
-export CODELLDB_PATH="$HOME/.local/share/codelldb/extension/adapter"
-export RUST_TOOLCHAIN="$HOME/.rustup/toolchains/nightly-aarch64-apple-darwin/bin"
 
 export NVM_LAZY_LOAD=true
 export NVM_DIR="$HOME/.nvm"
@@ -164,7 +159,7 @@ export NVM_DIR="$HOME/.nvm"
 # }
 # add-zsh-hook chpwd load-nvmrc
 # load-nvmrc
-nvm use default
+[[ -e $NVM_DIR/alias/default ]] && (( $+functions[nvm] )) && nvm use default
 
 noti() {
    if [[ $? = 0 ]]; then
@@ -179,15 +174,9 @@ noti() {
 # }
 #
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
-POWERLEVEL10K_DISABLE_GITSTATUS=true
 alias g='git'
-export PATH=${JAVA_HOME}:$OPEN_JDK_PATH:$HOMEBREW_PATH:$HOME/.cargo/bin:/opt/homebrew/bin/nvim:/opt/homebrew/opt/python@3.10/bin:$GRADLE_HOME:$GRADLE_USER_HOME:$LLVM_PATH:$CODELLDB_PATH:$RUST_TOOLCHAIN:$HOME/.local/bin:$PATH
-# export PATH=${JAVA_HOME}:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:$PYENV_ROOT/shims:$HOME/.cargo/bin:$PATH
 
+# Fuzzy-jump into a project folder (fd-cache and fzf come with the Core CLI intent)
 f() {
   cd $HOME
   result=$(fd-cache --type d --max-depth 5 \
@@ -205,15 +194,11 @@ fme() {
   "$1" .
 }
 
-fidea() {
-  f "$IDEA_PATH"
-}
-
 alias fcd="f cd"
 alias fmecd="fme cd"
 # fcd
 
-ulimit -n 65536
+ulimit -n 65536 2>/dev/null
 
 function iterm2_tab_title() {
   local dir_name="${PWD##*/}"

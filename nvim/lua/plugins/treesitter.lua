@@ -15,10 +15,11 @@ end
 
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all" (the listed parsers MUST always be installed)
-  ensure_installed = { "c",  "cpp", "rust", "typescript", "tsx", "javascript", "java", "markdown", "markdown_inline" },
+  ensure_installed = { "c",  "cpp", "rust", "typescript", "tsx", "javascript", "markdown", "markdown_inline" },
 
-  -- Install parsers synchronously (only applied to `ensure_installed`)
-  sync_install = false,
+  -- Install parsers synchronously (only applied to `ensure_installed`). Only when
+  -- install.sh runs Neovim headless, so the parsers are built before it quits.
+  sync_install = vim.env.SETUP_CONFIGS_HEADLESS == '1',
 
   -- Don't auto-compile parsers when entering an unfamiliar filetype. This avoids
   -- surprise `tree-sitter` compiles (which can stall on opening a file). The
