@@ -45,7 +45,7 @@ start() {
   local vm=$1 share=$2 ip i
   step "Booting $vm"
   if [[ -n $share ]]; then
-    tart run --no-graphics --dir=repo:$ROOT:ro $vm >/dev/null 2>&1 &!
+    tart run --no-graphics --dir=repo:${ROOT}:ro $vm >/dev/null 2>&1 &!
   else
     tart run --no-graphics $vm >/dev/null 2>&1 &!
   fi
