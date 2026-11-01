@@ -36,11 +36,14 @@ finish() {
   task "Neovim" "Check that Neovim starts without errors" 0 nvim_check
 }
 
+# Built next to its folder and moved in once checked out, like git_clone_pinned
 nvim_install_lazy() {
-  local dir=$1 commit=$2
+  local dir=$1 commit=$2 tmp=$1.setup-configs-partial
   detect_git
-  run ${SYS[git]} clone -q --filter=blob:none https://github.com/folke/lazy.nvim.git $dir &&
-    run ${SYS[git]} -C $dir checkout -q $commit
+  [[ -e $tmp ]] && { run rm -rf ${tmp:?} || return 1 }
+  run ${SYS[git]} clone -q --filter=blob:none https://github.com/folke/lazy.nvim.git $tmp &&
+    run ${SYS[git]} -C $tmp checkout -q $commit &&
+    run mv $tmp $dir || { [[ $MODE == dry ]] || rm -rf ${tmp:?}; return 1 }
 }
 
 nvim_headless() {

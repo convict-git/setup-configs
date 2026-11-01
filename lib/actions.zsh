@@ -147,9 +147,11 @@ copy_file() {
 }
 
 # git_clone_pinned <url> <commit> <destination> [branch]: a shallow checkout of
-# one commit; an existing destination is left alone
+# one commit; an existing destination is left alone. The clone is built next to
+# it and moved in only once complete: a failed or interrupted one would
+# otherwise leave a folder that every later run takes as done.
 git_clone_pinned() {
-  local url=$1 commit=$2 dest=$3 branch=${4:-main} git
+  local url=$1 commit=$2 dest=$3 branch=${4:-main} git tmp=$3.setup-configs-partial
   if [[ -e $dest ]]; then
     [[ $MODE == plan ]] && plan_add "Git clones" "$(tildify $dest) exists, left as it is" 1 ||
       ok "$(tildify $dest) exists, left as it is"
@@ -161,8 +163,10 @@ git_clone_pinned() {
   fi
   detect_git; git=${SYS[git]:-git}
   step "Cloning ${url#https://} at ${commit[1,7]}"
-  run $git init -q -b $branch $dest &&
-    run $git -C $dest remote add origin $url &&
-    run $git -C $dest fetch -q --depth 1 origin $commit &&
-    run $git -C $dest reset -q --hard FETCH_HEAD
+  [[ -e $tmp ]] && { run rm -rf ${tmp:?} || return 1 }
+  run $git init -q -b $branch $tmp &&
+    run $git -C $tmp remote add origin $url &&
+    run $git -C $tmp fetch -q --depth 1 origin $commit &&
+    run $git -C $tmp reset -q --hard FETCH_HEAD &&
+    run mv $tmp $dest || { [[ $MODE == dry ]] || rm -rf ${tmp:?}; return 1 }
 }
